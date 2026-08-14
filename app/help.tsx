@@ -13,7 +13,7 @@ export default function HelpScreen() {
     <Screen>
       <AppText variant="title">日常の「始める」を支える道具</AppText>
       <AppText color={colors.inkMuted} style={styles.lead}>
-        「はじめる」は、やる気の有無を評価せず、最初の動き・時間・環境を整えるセルフマネジメントアプリです。
+        「いま、はじめる」は、やる気の有無を評価せず、最初の動き・時間・環境を整えるセルフマネジメントアプリです。
       </AppText>
 
       <View style={styles.list}>

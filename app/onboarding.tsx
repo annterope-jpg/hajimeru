@@ -46,7 +46,7 @@ export default function OnboardingScreen() {
         やる気を待たずに、{`\n`}最初の一歩へ。
       </AppText>
       <AppText color={colors.inkMuted} style={styles.lead}>
-        「はじめる」は、したい気持ちを採点せず、着手しづらい日常の行動を小さく整えるセルフマネジメントツールです。
+        「いま、はじめる」は、したい気持ちを採点せず、着手しづらい日常の行動を小さく整えるセルフマネジメントツールです。
       </AppText>
 
       <Card tone="amber" style={styles.modelCard}>
