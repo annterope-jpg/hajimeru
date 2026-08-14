@@ -15,7 +15,6 @@ import {
   classifySafety,
   createDefaultUserPreferences,
   createLocalInterventionPlan,
-  createLocalRoadmap,
   inferTaskCategory,
   type ActionSuggestion,
   type InterventionPlan,
@@ -34,7 +33,7 @@ const BOTTLENECK_EXPLANATIONS: Record<keyof typeof BOTTLENECK_LABELS, string> = 
   taskClarity: '課題全体に判断が多く、最初の身体動作を選ぶ前に負荷が上がっています。',
   lowActivation: '眠さやぼんやり、身体の重さが、動き出すためのコストを上げています。',
   aversion: '退屈、不安、面倒さなどから離れると一時的に楽になるため、回避が起きやすい状態です。',
-  cueWeakness: '「あとで」の意図を、適切な瞬間に思い出す外部の合図が不足しています。',
+  cueWeakness: '脱線したり次の行動を見失ったりしたときに、外から戻る目印が不足しています。',
   competingReward: 'スマホなど、すぐ楽になる別の行動のほうが近く選びやすい状態です。',
   rewardDistance: '課題の手応えが先にあり、今感じる努力に比べて遠くなっています。',
   timeAmbiguity: '開始時点が「あとで」のままで、行動へ切り替える瞬間が見えにくい状態です。',
@@ -55,6 +54,7 @@ export default function PlanScreen() {
   const activeRoadmap = useAppStore((state) => state.activeRoadmap);
   const setPlan = useAppStore((state) => state.setPlan);
   const setRoadmap = useAppStore((state) => state.setRoadmap);
+  const updateAssessment = useAppStore((state) => state.updateAssessment);
   const startTimer = useAppStore((state) => state.startTimer);
   const prepareAttempt = useAppStore((state) => state.prepareAttempt);
   const restoreAttempt = useAppStore((state) => state.restoreAttempt);
@@ -148,38 +148,21 @@ export default function PlanScreen() {
         assessment,
         category,
         durationMinutes: selectedDuration,
+        valueAnchor: draft.valueAnchor,
+        forgettingWorry: draft.forgettingWorry ?? null,
       });
       const adjustedPlan = applyDraftOverrides(plan, draft.eventCue, draft.competingAction);
       setPlan(adjustedPlan);
-      setRoadmap(
-        draft.roadmapRequested
-          ? createLocalRoadmap({
-              taskText,
-              category,
-              firstAction: adjustedPlan.firstAction,
-              desiredOutcome: draft.desiredOutcome,
-            })
-          : undefined,
-      );
+      if (!draft.roadmapRequested) setRoadmap(undefined);
     }
     void getLocalRepository()
       .getPreferences()
       .then((stored) => setPreferences(stored ?? fallbackPreferences))
       .catch(() => undefined);
-  }, [assessment, category, draft.competingAction, draft.desiredOutcome, draft.eventCue, draft.roadmapRequested, linkedAttemptId, restoring, selectedDuration, setPlan, setRoadmap, taskText]);
+  }, [assessment, category, draft.competingAction, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.valueAnchor, linkedAttemptId, restoring, selectedDuration, setPlan, setRoadmap, taskText]);
 
   function openRoadmap() {
-    if (!activePlan) return;
-    if (!activeRoadmap) {
-      setRoadmap(
-        createLocalRoadmap({
-          taskText,
-          category,
-          firstAction: activePlan.firstAction,
-          desiredOutcome: draft.desiredOutcome,
-        }),
-      );
-    }
+    if (!activeRoadmap) updateAssessment({ roadmapRequested: true });
     router.push('/roadmap');
   }
 
@@ -366,15 +349,15 @@ export default function PlanScreen() {
             <Ionicons name="map-outline" size={22} color={colors.primary} />
           </View>
           <View style={styles.planCopy}>
-            <AppText variant="label">{activeRoadmap ? '大きな課題の、仮の地図があります' : '課題が大きすぎて、入口が見えないとき'}</AppText>
+            <AppText variant="label">{activeRoadmap ? '相談内容を反映した、仮の地図があります' : '課題が大きすぎて、入口が見えないとき'}</AppText>
             <AppText variant="caption" color={colors.inkMuted}>
-              {activeRoadmap ? '今の一歩だけを強調し、その後は粗い見通しとして表示します。' : '「今・次・あとで」だけのロードマップを作れます。全部やる約束ではありません。'}
+              {activeRoadmap ? '今の一歩だけを強調し、その後は粗い見通しとして表示します。' : '先に「何が分からないか」を短く確認してから、「今・次・あとで」の仮の地図にします。'}
             </AppText>
           </View>
         </View>
         <AppButton
           testID="open-roadmap"
-          label={activeRoadmap ? 'ロードマップを見る' : 'ざっくり道筋を作る'}
+          label={activeRoadmap ? 'ロードマップを見る' : '迷いを整理して地図を作る'}
           variant="secondary"
           compact
           icon="map-outline"
@@ -389,6 +372,9 @@ export default function PlanScreen() {
           <PlanRow label="妨害を減らす" value={activePlan.distractionFriction} />
         ) : null}
         {activePlan.microReward ? <PlanRow label="小さな手応え" value={activePlan.microReward} /> : null}
+        {activePlan.valueAnchor ? <PlanRow label="この一歩の意味" value={activePlan.valueAnchor} /> : null}
+        {activePlan.returnCue ? <PlanRow label="脱線・失念から戻る目印" value={activePlan.returnCue} /> : null}
+        {activePlan.reassuranceAction ? <PlanRow label="忘れる心配を頭から下ろす" value={activePlan.reassuranceAction} /> : null}
       </View>
 
       <AppText variant="label" style={styles.sectionTitle}>

@@ -3,6 +3,7 @@ import type {
   Assessment,
   Bottleneck,
   InterventionPlan,
+  Score0To10,
   TaskCategory,
   TimerMinutes,
 } from "./types";
@@ -148,6 +149,10 @@ export interface CreateLocalInterventionPlanInput {
   assessment: Assessment;
   category?: TaskCategory;
   durationMinutes?: TimerMinutes;
+  /** Optional wording chosen by the person, never used to score a bottleneck. */
+  valueAnchor?: string;
+  /** Worry about forgetting is distinct from actual cue/attention difficulty. */
+  forgettingWorry?: Score0To10 | null;
   createdAt?: string;
 }
 
@@ -158,14 +163,21 @@ function includes(
   return bottlenecks.includes(bottleneck);
 }
 
+function isHighOptionalScore(value: Score0To10 | null | undefined): boolean {
+  return typeof value === "number" && Number.isFinite(value) && value >= 6;
+}
+
 export function createLocalInterventionPlan({
   taskText,
   assessment,
   category = inferTaskCategory(taskText),
   durationMinutes = 3,
+  valueAnchor,
+  forgettingWorry,
   createdAt = new Date().toISOString(),
 }: CreateLocalInterventionPlanInput): InterventionPlan {
   const bottlenecks = [...assessment.primaryBottlenecks];
+  const normalizedValueAnchor = valueAnchor?.trim() || null;
   const [suggestion] = getLocalActionSuggestions(taskText, category);
 
   // getLocalActionSuggestions has a total category map and always returns three.
@@ -190,7 +202,16 @@ export function createLocalInterventionPlan({
       ? "スマホの通知を切り、手の届かない所に置く"
       : null,
     microReward: includes(bottlenecks, "rewardDistance")
-      ? "タイマーが鳴ったら、チェックを1つ付ける"
+      ? normalizedValueAnchor
+        ? `タイマーが鳴ったら、「${normalizedValueAnchor}」に向けて少し動けた印を1つ付ける`
+        : "タイマーが鳴ったら、チェックを1つ付ける"
+      : null,
+    valueAnchor: normalizedValueAnchor,
+    returnCue: includes(bottlenecks, "cueWeakness")
+      ? "戻るための目印を外に置く（通知・付箋・開いた画面のどれか1つ）"
+      : null,
+    reassuranceAction: isHighOptionalScore(forgettingWorry)
+      ? "忘れないよう頭で持ち続けず、「次にすること」を1行だけ外に残す"
       : null,
     supportiveMessage: includes(bottlenecks, "aversion")
       ? "嫌なままで大丈夫。30秒だけ始めます。"

@@ -81,7 +81,7 @@ export default function AssessmentScreen() {
                 <View style={styles.roadmapPrompt}>
                   <AppText variant="label">大きな課題なら、仮の地図も作れます</AppText>
                   <AppText variant="caption" color={colors.inkMuted}>
-                    課題が大きいほど、開始前の判断が増えます。全部を細かく決めず、「今・次・あとで」の粗い道筋にします。
+                    課題が大きいほど、開始前の判断が増えます。ロードマップを自動で決めることはせず、次の画面で「いま何が分からないか」を短く確認してから、「今・次・あとで」の粗い道筋にします。
                   </AppText>
                   <ChoiceChips
                     accessibilityLabel="ロードマップを作るか"
@@ -198,27 +198,31 @@ function AdvancedAssessment() {
   const scales = [
     {
       key: 'rewardDistance' as const,
-      title: '終わった結果を、今どのくらい遠く感じますか？',
+      title: '手応えや助かりを、今どのくらい遠く感じますか？',
       low: '今すぐ実感できる',
       high: 'かなり遠い',
+      reflection: '高い場合は、1〜3分後に「少し動けた印」を置く提案にします。',
     },
     {
       key: 'timeAmbiguity' as const,
       title: 'いつ始めるか、どのくらい曖昧ですか？',
       low: '具体的',
       high: 'かなり曖昧',
+      reflection: '高い場合は、「夕食後」など出来事に結びつけた開始の合図を提案します。',
     },
     {
       key: 'cueWeakness' as const,
-      title: 'その時に思い出せない心配はありますか？',
-      low: '思い出せる',
-      high: '忘れそう',
+      title: '脱線したり、次にすることを見失ったりしやすいですか？',
+      low: '戻れる・見失いにくい',
+      high: '脱線・見失いやすい',
+      reflection: '実際に起こりやすい困難を尋ねます。高い場合は、通知・付箋・開いた画面など「外から戻る目印」を提案します。',
     },
     {
       key: 'competingReward' as const,
       title: '代わりにしたくなることは、どのくらい強いですか？',
       low: '特にない',
       high: 'とても強い',
+      reflection: '高い場合は、スマホなどに小さな摩擦を足す提案にします。',
     },
   ];
 
@@ -228,12 +232,34 @@ function AdvancedAssessment() {
         必要なら、もう少し調整
       </AppText>
       <AppText color={colors.inkMuted} style={styles.help}>
-        答えた項目だけを使います。分からない項目は空欄のままで構いません。
+        ここは「何が開始コストを上げているか」を見分け、回答ごとに提案を変える場所です。答えた項目だけを使い、分からない項目は空欄のままで構いません。
       </AppText>
       <View style={styles.advancedList}>
+        <Card tone="blue" style={styles.adjustmentIntro}>
+          <AppText variant="label">目標の価値と、いまの開始コストは別のものです</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            大切なことでも、判断・疲れ・不安・脱線しやすさが重なると始めにくくなります。ここでは「もっとやる気を出す」のではなく、今の入口を軽くするための調整を選びます。
+          </AppText>
+        </Card>
+        <Card>
+          <AppText variant="label">この課題が少し進むと、何が助かる・大切ですか？（任意）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            自分を追い込むためではなく、最初の一歩が何に向かうものかを手元に置くための言葉です。入力すると開始プランに表示します。
+          </AppText>
+          <TextInput
+            accessibilityLabel="この一歩の意味"
+            placeholder="例：明日の朝に机を使えるようにする"
+            placeholderTextColor="#89948E"
+            value={assessment.valueAnchor ?? ''}
+            onChangeText={(valueAnchor) => updateAssessment({ valueAnchor })}
+            maxLength={120}
+            style={styles.smallInput}
+          />
+        </Card>
         {scales.map((scale) => (
           <Card key={scale.key}>
             <AppText variant="label">{scale.title}</AppText>
+            <AppText variant="caption" color={colors.inkMuted}>{scale.reflection}</AppText>
             <RatingScale
               value={assessment[scale.key]}
               onChange={(value) => updateAssessment({ [scale.key]: value })}
@@ -243,8 +269,22 @@ function AdvancedAssessment() {
             />
           </Card>
         ))}
+        <Card tone="amber">
+          <AppText variant="label">忘れてしまうことが、どのくらい気がかりですか？</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            これは「実際に脱線・失念しやすいか」ではなく、忘れる心配の強さを尋ねます。高い場合は、覚え続けなくてもよいよう「次にすること」を外に1行残す提案にします。
+          </AppText>
+          <RatingScale
+            value={assessment.forgettingWorry}
+            onChange={(forgettingWorry) => updateAssessment({ forgettingWorry })}
+            lowLabel="気がかりでない"
+            highLabel="とても気がかり"
+            accessibilityLabel="忘れてしまう心配 0から10"
+          />
+        </Card>
         <Card>
           <AppText variant="label">何の後なら始めやすそうですか？（任意）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>入力すると、開始のきっかけとしてプランに反映します。</AppText>
           <TextInput
             accessibilityLabel="イベントキュー"
             placeholder="例：夕食の皿をシンクに置いた後"
@@ -257,6 +297,7 @@ function AdvancedAssessment() {
         </Card>
         <Card>
           <AppText variant="label">代わりにしやすいことは？（任意）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>入力すると、その行動に小さな距離を置く提案に反映します。</AppText>
           <TextInput
             accessibilityLabel="競合行動"
             placeholder="例：スマホ、動画、ゲーム"
@@ -287,6 +328,7 @@ const styles = StyleSheet.create({
   outcomeEditor: { gap: spacing.sm },
   footerButtons: { gap: spacing.xs },
   advancedList: { gap: spacing.md },
+  adjustmentIntro: { gap: spacing.sm },
   smallInput: {
     minHeight: 52,
     borderRadius: radii.md,

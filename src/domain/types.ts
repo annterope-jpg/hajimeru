@@ -100,6 +100,12 @@ export interface InterventionPlan {
   activationRitual: string | null;
   distractionFriction: string | null;
   microReward: string | null;
+  /** An optional reminder of why this small action matters right now. */
+  valueAnchor: string | null;
+  /** An external way back when attention is likely to drift or the task is lost. */
+  returnCue: string | null;
+  /** A way to set down worry about forgetting without holding it in mind. */
+  reassuranceAction: string | null;
   supportiveMessage: string;
   bottlenecks: Bottleneck[];
   source: "local" | "ai";
@@ -115,6 +121,25 @@ export interface RoadmapStep {
   description: string;
 }
 
+export const ROADMAP_CONCERNS = [
+  "entry",
+  "scope",
+  "information",
+  "decisions",
+  "endPoint",
+] as const;
+
+export type RoadmapConcern = (typeof ROADMAP_CONCERNS)[number];
+
+/**
+ * A brief, user-selected description of what is unclear about a large task.
+ * It is used to adapt the orientation steps; it is not a diagnostic label.
+ */
+export interface RoadmapConsultation {
+  concern: RoadmapConcern;
+  knownContext: string | null;
+}
+
 /**
  * A low-detail orientation aid for a large or ambiguous task. It is deliberately
  * not a completion checklist: only the `now` step is treated as an action.
@@ -125,6 +150,8 @@ export interface TaskRoadmap {
   goalState: string;
   framing: string;
   steps: RoadmapStep[];
+  /** Optional so roadmaps created before the consultation flow remain readable. */
+  consultation?: RoadmapConsultation;
   createdAt: ISODateTime;
 }
 

@@ -91,6 +91,9 @@ describe("createLocalInterventionPlan", () => {
       activationRitual: null,
       distractionFriction: "スマホの通知を切り、手の届かない所に置く",
       microReward: "タイマーが鳴ったら、チェックを1つ付ける",
+      valueAnchor: null,
+      returnCue: null,
+      reassuranceAction: null,
       bottlenecks: ["rewardDistance", "competingReward"],
       source: "local",
       createdAt: "2026-08-13T12:00:00.000Z",
@@ -114,5 +117,26 @@ describe("createLocalInterventionPlan", () => {
       "立って、水を一口飲む",
     );
     expect(activationAndAversionPlan.supportiveMessage).toContain("嫌なまま");
+  });
+
+  it("keeps a worry about forgetting separate from actual loss-of-track support", () => {
+    const plan = createLocalInterventionPlan({
+      taskText: "申請書類を進める",
+      assessment: assessBottlenecks({ rewardDistance: 8 }),
+      valueAnchor: "来週の手続きを安心して迎える",
+      forgettingWorry: 8,
+    });
+
+    expect(plan.valueAnchor).toBe("来週の手続きを安心して迎える");
+    expect(plan.microReward).toContain("来週の手続きを安心して迎える");
+    expect(plan.reassuranceAction).toContain("頭で持ち続けず");
+    expect(plan.returnCue).toBeNull();
+
+    const cuePlan = createLocalInterventionPlan({
+      taskText: "申請書類を進める",
+      assessment: assessBottlenecks({ cueWeakness: 8 }),
+    });
+    expect(cuePlan.returnCue).toContain("戻るための目印");
+    expect(cuePlan.reassuranceAction).toBeNull();
   });
 });

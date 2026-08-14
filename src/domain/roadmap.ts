@@ -1,4 +1,10 @@
-import type { RoadmapStep, TaskCategory, TaskRoadmap } from './types';
+import type {
+  RoadmapConcern,
+  RoadmapConsultation,
+  RoadmapStep,
+  TaskCategory,
+  TaskRoadmap,
+} from './types';
 
 interface RoadmapTemplate {
   goalState: string;
@@ -81,23 +87,63 @@ export interface CreateLocalRoadmapInput {
   category: TaskCategory;
   firstAction: string;
   desiredOutcome?: string;
+  consultation?: RoadmapConsultation;
   createdAt?: string;
 }
+
+export const ROADMAP_CONCERN_COPY: Readonly<
+  Record<RoadmapConcern, { label: string; reflection: string; step: Omit<RoadmapStep, 'id' | 'kind'> }>
+> = {
+  entry: {
+    label: 'どこから始めるか決められない',
+    reflection: '入口を1つだけ決め、次の判断を後ろへ送る形にしました。',
+    step: { title: '入口を1つに決める', description: '最初の一歩の次に触る場所・画面・道具を1つだけ選ぶ。' },
+  },
+  scope: {
+    label: '範囲が広すぎて圧倒される',
+    reflection: '今日扱う範囲を小さく囲い、残りをいったん地図の外に置きました。',
+    step: { title: '今日の範囲を小さく囲う', description: '場所・時間・対象のどれか1つで、今日触る境界を決める。' },
+  },
+  information: {
+    label: '必要な物や情報が分からない',
+    reflection: '「今ある物」と「あとで調べること」を分ける順番にしました。',
+    step: { title: '分かっていることを1か所に集める', description: '今ある物や情報だけを置き、不足は「調べる」に分ける。' },
+  },
+  decisions: {
+    label: '決めることが多すぎる',
+    reflection: '今決めないことを保留できる順番にし、判断を減らしました。',
+    step: { title: '今決めないことを保留にする', description: '迷う物・迷う選択を1つだけ「あとで決める」に移す。' },
+  },
+  endPoint: {
+    label: 'どこまででよいか分からない',
+    reflection: '今日の一区切りを先に置き、終わりのない計画にしないようにしました。',
+    step: { title: '今日の一区切りを1つ決める', description: '完了ではなく「ここまでなら十分」を短い言葉で決める。' },
+  },
+};
 
 export function createLocalRoadmap({
   taskText,
   category,
   firstAction,
   desiredOutcome,
+  consultation,
   createdAt = new Date().toISOString(),
 }: CreateLocalRoadmapInput): TaskRoadmap {
   const template = TEMPLATES[category];
   const goalState = desiredOutcome?.trim() || template.goalState;
+  const concernCopy = consultation ? ROADMAP_CONCERN_COPY[consultation.concern] : null;
+  const later = concernCopy
+    ? [concernCopy.step, ...template.later.slice(1)]
+    : template.later;
+  const knownContext = consultation?.knownContext?.trim();
+  const framing = concernCopy
+    ? `${template.framing} ${concernCopy.reflection}${knownContext ? ` 「${knownContext}」は入口の手がかりとして扱います。` : ''}`
+    : template.framing;
   return {
     taskText,
     category,
     goalState,
-    framing: template.framing,
+    framing,
     steps: [
       {
         id: 'now',
@@ -105,12 +151,15 @@ export function createLocalRoadmap({
         title: 'いま：入口を作る',
         description: firstAction,
       },
-      ...template.later.map((step, index) => ({
+      ...later.map((step, index) => ({
         ...step,
         id: `phase-${index + 1}`,
         kind: index === 0 ? ('next' as const) : ('later' as const),
       })),
     ],
+    consultation: consultation
+      ? { concern: consultation.concern, knownContext: knownContext || null }
+      : undefined,
     createdAt,
   };
 }

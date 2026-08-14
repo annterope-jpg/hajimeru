@@ -39,6 +39,26 @@ describe('createLocalRoadmap', () => {
     expect(fallback.goalState.length).toBeGreaterThan(0);
   });
 
+  it('adapts the first future step to the person\'s current uncertainty', () => {
+    const roadmap = createLocalRoadmap({
+      taskText: '確定申告をする',
+      category: 'paperwork',
+      firstAction: '申告ページを開く',
+      consultation: {
+        concern: 'information',
+        knownContext: '締切は月末、必要書類は不明',
+      },
+    });
+
+    expect(roadmap.consultation).toEqual({
+      concern: 'information',
+      knownContext: '締切は月末、必要書類は不明',
+    });
+    expect(roadmap.steps[1]).toMatchObject({ title: '分かっていることを1か所に集める' });
+    expect(roadmap.framing).toContain('今ある物');
+    expect(roadmap.framing).toContain('締切は月末');
+  });
+
   it.each(['email', 'bathing', 'studying', 'transition', 'other'] as const)(
     'builds an offline roadmap for %s',
     (category) => {
