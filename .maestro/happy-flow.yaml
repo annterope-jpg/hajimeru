@@ -1,0 +1,57 @@
+appId: jp.example.hajimeru
+name: 最初の一歩を開始して成功として終了できる
+tags:
+  - smoke
+  - offline-core
+---
+- launchApp:
+    clearState: true
+
+- assertVisible: "18歳以上です"
+- tapOn:
+    id: "age-confirm-checkbox"
+- tapOn:
+    id: "onboarding-continue"
+
+- assertVisible: "今、始める"
+- tapOn:
+    id: "task-input"
+- inputText: "机の上を片付けたい"
+- tapOn:
+    id: "home-start"
+
+# 1/3: 最初の行動は曖昧
+- assertVisible: "最初に何をするか、分かりますか？"
+- tapOn: "まだ曖昧"
+- tapOn:
+    id: "assessment-next"
+
+# 2/3: 嫌悪度。ラベルが各数値ボタンのアクセシビリティ名になる。
+- assertVisible: "考えると、どのくらいイヤですか？"
+- tapOn: "7"
+- tapOn:
+    id: "assessment-next"
+
+# 3/3: 低覚醒
+- assertVisible: "いま、身体や頭はどのくらい重いですか？"
+- tapOn: "5"
+- tapOn:
+    id: "assessment-next"
+
+- assertVisible: "開始プラン"
+- assertVisible: "最初の一歩は、これだけ"
+- tapOn:
+    id: "plan-start"
+
+# タイマー開始時点を成功として記録し、完了は要求しない。
+- assertVisible:
+    id: "timer-started"
+- assertVisible: "開始できた時点で、もう成功です"
+- tapOn: "ここで止める（成功）"
+
+- assertVisible: "ここで終了（成功）"
+- tapOn: "ここで終了（成功）"
+- tapOn:
+    id: "finish-success"
+
+- assertVisible: "始められた記録"

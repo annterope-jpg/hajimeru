@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "はじめる",
+    "slug": "hajimeru",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "hajimeru",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "jp.example.hajimeru",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "予定したタイミングで最初の一歩を思い出すために通知を使います。"
+      }
+    },
+    "android": {
+      "package": "jp.example.hajimeru",
+      "adaptiveIcon": {
+        "backgroundColor": "#EAF2EC"
+      },
+      "permissions": ["VIBRATE", "POST_NOTIFICATIONS"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "start-cues"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "supabaseUrl": "",
+      "supabaseAnonKey": ""
+    }
+  }
+}

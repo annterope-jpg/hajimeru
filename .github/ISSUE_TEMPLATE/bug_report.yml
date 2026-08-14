@@ -1,0 +1,52 @@
+name: 不具合報告
+description: 架空データで再現できる不具合を報告します
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **実在する本人・患者・相談者の氏名、連絡先、診療・服薬情報、タスク本文を記載しないでください。**
+        セキュリティやデータ露出は公開Issueではなく、Securityタブの非公開報告を利用してください。
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 何が起きたかを、個人を特定できない形で記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 架空の入力例を使ってください。
+      placeholder: |
+        1. 「机を片付ける」と入力
+        2. 「まだ曖昧」を選択
+        3. …
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: 環境
+      options:
+        - iOS
+        - Android
+        - Web
+        - 不明
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した動作
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: プライバシー確認
+      options:
+        - label: 実在する人の個人情報・健康情報を含めていません
+          required: true

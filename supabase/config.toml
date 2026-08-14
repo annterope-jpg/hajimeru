@@ -1,0 +1,7 @@
+project_id = "hajimeru"
+
+[functions.suggest-entry]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true

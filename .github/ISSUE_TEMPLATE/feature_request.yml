@@ -1,0 +1,36 @@
+name: 改善提案
+description: 利用者負荷や安全性を考慮した改善を提案します
+title: '[Proposal] '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        実在する本人・患者・相談者の情報は記載せず、一般化または架空化してください。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 解決したい困りごと
+      description: 利用者がどの場面で止まるかを一般化して記載してください。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案
+    validations:
+      required: true
+  - type: textarea
+    id: burden
+    attributes:
+      label: 利用者の負荷・安全性への影響
+      description: 選択肢、入力、通知、外部通信、医療的な誤解への影響を記載してください。
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: プライバシー確認
+      options:
+        - label: 実在する人の個人情報・健康情報を含めていません
+          required: true
