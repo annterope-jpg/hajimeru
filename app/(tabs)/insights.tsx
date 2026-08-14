@@ -27,7 +27,7 @@ const INTERVENTION_LABELS: Readonly<Record<Bottleneck, string>> = {
   aversion: '嫌なまま30秒だけ始める',
   cueWeakness: '目立つ合図で思い出せるようにする',
   competingReward: 'スマホなどに小さな摩擦を足す',
-  rewardDistance: '小さな手応えをすぐ近くに置く',
+  rewardDistance: '開始直後の変化を見える形にする',
   timeAmbiguity: '出来事を開始タイミングにする',
 };
 

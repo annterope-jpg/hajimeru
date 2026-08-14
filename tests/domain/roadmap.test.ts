@@ -45,18 +45,40 @@ describe('createLocalRoadmap', () => {
       category: 'paperwork',
       firstAction: '申告ページを開く',
       consultation: {
-        concern: 'information',
+        concerns: ['information'],
         knownContext: '締切は月末、必要書類は不明',
       },
     });
 
     expect(roadmap.consultation).toEqual({
+      concerns: ['information'],
       concern: 'information',
       knownContext: '締切は月末、必要書類は不明',
     });
     expect(roadmap.steps[1]).toMatchObject({ title: '分かっていることを1か所に集める' });
     expect(roadmap.framing).toContain('今ある物');
     expect(roadmap.framing).toContain('締切は月末');
+  });
+
+  it('keeps multiple concerns in priority order and reflects each in the roadmap', () => {
+    const roadmap = createLocalRoadmap({
+      taskText: '部屋全体を片付けたい',
+      category: 'tidying',
+      firstAction: 'ゴミ袋を1枚取り出す',
+      consultation: {
+        concerns: ['scope', 'decisions', 'endPoint'],
+        knownContext: null,
+      },
+    });
+
+    expect(roadmap.consultation?.concerns).toEqual(['scope', 'decisions', 'endPoint']);
+    expect(roadmap.steps.slice(1).map(({ title }) => title)).toEqual([
+      '今日の範囲を小さく囲う',
+      '今決めないことを保留にする',
+      '今日の一区切りを1つ決める',
+    ]);
+    expect(roadmap.framing).toContain('優先1');
+    expect(roadmap.framing).toContain('優先3');
   });
 
   it.each(['email', 'bathing', 'studying', 'transition', 'other'] as const)(

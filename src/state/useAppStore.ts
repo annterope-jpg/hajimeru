@@ -1,7 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-import type { InterventionPlan, RoadmapConcern, TaskAttempt, TaskRoadmap } from '@/domain';
+import type {
+  ActivationSource,
+  AnxietyReliefPreference,
+  EmotionalResponse,
+  InterventionPlan,
+  RoadmapConcern,
+  TaskAttempt,
+  TaskRoadmap,
+} from '@/domain';
 
 const SHELL_KEY = 'hajimeru.shell.v1';
 
@@ -19,9 +27,13 @@ export interface AssessmentDraft {
   valueAnchor?: string;
   /** Worry about forgetting, kept distinct from actual loss-of-track/cue difficulty. */
   forgettingWorry?: number;
+  emotionalResponses?: EmotionalResponse[];
+  anxietyReliefPreference?: AnxietyReliefPreference;
+  activationSource?: ActivationSource;
   roadmapRequested?: boolean;
   desiredOutcome?: string;
   roadmapConcern?: RoadmapConcern;
+  roadmapConcerns?: RoadmapConcern[];
   roadmapKnownContext?: string;
 }
 
@@ -246,6 +258,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
         roadmapRequested: attempt.roadmap !== undefined && attempt.roadmap !== null,
         desiredOutcome: attempt.roadmap?.goalState,
         roadmapConcern: attempt.roadmap?.consultation?.concern,
+        roadmapConcerns: attempt.roadmap?.consultation?.concerns,
         roadmapKnownContext: attempt.roadmap?.consultation?.knownContext ?? undefined,
       },
       selectedDurationMinutes: attempt.plan.durationMinutes,

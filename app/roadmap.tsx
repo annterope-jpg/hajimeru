@@ -6,10 +6,11 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { AppButton } from '@/components/AppButton';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
-import { ChoiceChips } from '@/components/ChoiceChips';
+import { MultiChoiceChips } from '@/components/MultiChoiceChips';
 import { Screen } from '@/components/Screen';
 import {
   createLocalRoadmap,
+  getRoadmapConcerns,
   inferTaskCategory,
   ROADMAP_CONCERN_COPY,
   type RoadmapConcern,
@@ -46,7 +47,7 @@ export default function RoadmapScreen() {
   }
 
   const consultation = roadmap.consultation;
-  const concernCopy = consultation ? ROADMAP_CONCERN_COPY[consultation.concern] : null;
+  const selectedConcerns = getRoadmapConcerns(consultation);
 
   return (
     <Screen
@@ -66,11 +67,23 @@ export default function RoadmapScreen() {
         全部を覚えたり、順番どおりに終えたりする必要はありません。迷いを減らすために、今いる場所と次の方向だけを置いています。
       </AppText>
 
-      {consultation && concernCopy ? (
+      {consultation && selectedConcerns.length ? (
         <Card tone="blue" style={styles.consultationCard}>
-          <AppText variant="label">相談した内容を、地図の最初の「次」に反映しました</AppText>
-          <AppText variant="caption" color={colors.inkMuted}>いまの迷い：{concernCopy.label}</AppText>
-          <AppText variant="caption" color={colors.inkMuted}>{concernCopy.reflection}</AppText>
+          <AppText variant="label">相談した内容を、選んだ優先順で地図に反映しました</AppText>
+          {selectedConcerns.map((concern, index) => {
+            const copy = ROADMAP_CONCERN_COPY[concern];
+            return (
+              <View key={concern} style={styles.reflectionRow}>
+                <View style={styles.priorityBadge}>
+                  <AppText variant="caption" color={colors.white}>{index + 1}</AppText>
+                </View>
+                <View style={styles.reflectionCopy}>
+                  <AppText variant="caption" color={colors.primary}>{copy.label}</AppText>
+                  <AppText variant="caption" color={colors.inkMuted}>{copy.reflection}</AppText>
+                </View>
+              </View>
+            );
+          })}
           {consultation.knownContext ? (
             <AppText variant="caption" color={colors.inkMuted}>手がかり：{consultation.knownContext}</AppText>
           ) : null}
@@ -128,19 +141,27 @@ function RoadmapConsultation() {
   const draft = useAppStore((state) => state.assessmentDraft);
   const updateAssessment = useAppStore((state) => state.updateAssessment);
   const setRoadmap = useAppStore((state) => state.setRoadmap);
-  const [concern, setConcern] = useState<RoadmapConcern | undefined>(draft.roadmapConcern);
+  const [concerns, setConcerns] = useState<RoadmapConcern[]>(
+    draft.roadmapConcerns?.length
+      ? draft.roadmapConcerns
+      : draft.roadmapConcern
+        ? [draft.roadmapConcern]
+        : [],
+  );
   const [knownContext, setKnownContext] = useState(draft.roadmapKnownContext ?? '');
   const [desiredOutcome, setDesiredOutcome] = useState(draft.desiredOutcome ?? '');
 
   function createRoadmap() {
-    if (!taskText || !plan || !concern) return;
+    if (!taskText || !plan || !concerns.length) return;
     const consultation = {
-      concern,
+      concerns,
+      concern: concerns[0],
       knownContext: knownContext.trim() || null,
     };
     updateAssessment({
       roadmapRequested: true,
-      roadmapConcern: concern,
+      roadmapConcern: concerns[0],
+      roadmapConcerns: concerns,
       roadmapKnownContext: consultation.knownContext ?? undefined,
       desiredOutcome,
     });
@@ -165,7 +186,7 @@ function RoadmapConsultation() {
             testID="roadmap-generate"
             label="この内容で仮の地図を作る"
             icon="map-outline"
-            disabled={!concern}
+            disabled={!concerns.length}
             onPress={createRoadmap}
           />
         </View>
@@ -174,7 +195,7 @@ function RoadmapConsultation() {
       <AppText variant="caption" color={colors.primary}>大きな課題の見通し</AppText>
       <AppText variant="title" style={styles.title}>地図にする前に、いまの迷いを短く確認します</AppText>
       <AppText color={colors.inkMuted} style={styles.lead}>
-        正しい計画を作るためではなく、いま必要な判断を減らすための確認です。選んだ迷いは、地図の最初の「次」に反映します。
+        正しい計画を作るためではなく、いま必要な判断を減らすための確認です。複数ある場合は、重要な順に最大3つ選んでください。
       </AppText>
 
       <Card tone="green" style={styles.taskCard}>
@@ -184,12 +205,15 @@ function RoadmapConsultation() {
 
       <View style={styles.consultationList}>
         <Card>
-          <AppText variant="label">いま一番近い迷いはどれですか？</AppText>
-          <ChoiceChips
+          <AppText variant="label">いま近い迷いを、重要な順に選んでください（最大3つ）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>選んだ順に1・2・3の番号が付きます。もう一度タップすると外せます。</AppText>
+          <MultiChoiceChips
             accessibilityLabel="ロードマップで扱う迷い"
-            value={concern}
-            onChange={setConcern}
+            value={concerns}
+            onChange={setConcerns}
             choices={CONCERN_CHOICES}
+            maxSelections={3}
+            showPriority
           />
         </Card>
         <Card>
@@ -230,6 +254,16 @@ const styles = StyleSheet.create({
   consultationList: { marginTop: spacing.lg, gap: spacing.md },
   consultationFooter: { gap: spacing.xs },
   consultationCard: { gap: spacing.xs, marginBottom: spacing.lg },
+  reflectionRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginTop: spacing.xs },
+  reflectionCopy: { flex: 1, gap: 2 },
+  priorityBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: radii.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+  },
   goalCard: { padding: spacing.xl },
   goalLabel: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   steps: { marginTop: spacing.xxl },

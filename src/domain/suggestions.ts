@@ -1,7 +1,10 @@
 import type {
   ActionSuggestion,
+  ActivationSource,
+  AnxietyReliefPreference,
   Assessment,
   Bottleneck,
+  EmotionalResponse,
   InterventionPlan,
   Score0To10,
   TaskCategory,
@@ -153,6 +156,9 @@ export interface CreateLocalInterventionPlanInput {
   valueAnchor?: string;
   /** Worry about forgetting is distinct from actual cue/attention difficulty. */
   forgettingWorry?: Score0To10 | null;
+  emotionalResponses?: EmotionalResponse[];
+  anxietyReliefPreference?: AnxietyReliefPreference;
+  activationSource?: ActivationSource;
   createdAt?: string;
 }
 
@@ -174,10 +180,17 @@ export function createLocalInterventionPlan({
   durationMinutes = 3,
   valueAnchor,
   forgettingWorry,
+  emotionalResponses = [],
+  anxietyReliefPreference,
+  activationSource,
   createdAt = new Date().toISOString(),
 }: CreateLocalInterventionPlanInput): InterventionPlan {
   const bottlenecks = [...assessment.primaryBottlenecks];
   const normalizedValueAnchor = valueAnchor?.trim() || null;
+  const anxietySelected = emotionalResponses.includes("anxiety");
+  const anxietyReductionSelected =
+    anxietyReliefPreference === "yes" &&
+    (anxietySelected || activationSource === "freeze" || activationSource === "both");
   const [suggestion] = getLocalActionSuggestions(taskText, category);
 
   // getLocalActionSuggestions has a total category map and always returns three.
@@ -196,7 +209,11 @@ export function createLocalInterventionPlan({
     durationMinutes,
     startCue,
     activationRitual: includes(bottlenecks, "lowActivation")
-      ? "立って、水を一口飲む"
+      ? activationSource === "freeze"
+        ? "肩を少し下げ、息を長く1回吐く"
+        : activationSource === "both"
+          ? "息を長く1回吐いてから、立って水を一口飲む"
+          : "立って、水を一口飲む"
       : null,
     distractionFriction: includes(bottlenecks, "competingReward")
       ? "スマホの通知を切り、手の届かない所に置く"
@@ -213,8 +230,13 @@ export function createLocalInterventionPlan({
     reassuranceAction: isHighOptionalScore(forgettingWorry)
       ? "忘れないよう頭で持ち続けず、「次にすること」を1行だけ外に残す"
       : null,
+    emotionSupport: anxietyReductionSelected
+      ? "不安を1段下げるため、いちばん不確かなことを1つ書き、確認できる最小の一歩にする"
+      : null,
     supportiveMessage: includes(bottlenecks, "aversion")
-      ? "嫌なままで大丈夫。30秒だけ始めます。"
+      ? anxietyReductionSelected
+        ? "不安を少し下げてからで大丈夫。確認できる一歩だけ始めます。"
+        : "嫌なままで大丈夫。30秒だけ始めます。"
       : "終わらせなくて大丈夫。最初の一歩だけです。",
     bottlenecks,
     source: "local",

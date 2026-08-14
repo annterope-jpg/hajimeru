@@ -35,7 +35,7 @@ const BOTTLENECK_EXPLANATIONS: Record<keyof typeof BOTTLENECK_LABELS, string> = 
   aversion: '退屈、不安、面倒さなどから離れると一時的に楽になるため、回避が起きやすい状態です。',
   cueWeakness: '脱線したり次の行動を見失ったりしたときに、外から戻る目印が不足しています。',
   competingReward: 'スマホなど、すぐ楽になる別の行動のほうが近く選びやすい状態です。',
-  rewardDistance: '課題の手応えが先にあり、今感じる努力に比べて遠くなっています。',
+  rewardDistance: '開始後1〜3分の変化が見えにくく、「少し進んだ」という結果をすぐ受け取りにくい状態です。',
   timeAmbiguity: '開始時点が「あとで」のままで、行動へ切り替える瞬間が見えにくい状態です。',
 };
 
@@ -150,6 +150,9 @@ export default function PlanScreen() {
         durationMinutes: selectedDuration,
         valueAnchor: draft.valueAnchor,
         forgettingWorry: draft.forgettingWorry ?? null,
+        emotionalResponses: draft.emotionalResponses,
+        anxietyReliefPreference: draft.anxietyReliefPreference,
+        activationSource: draft.activationSource,
       });
       const adjustedPlan = applyDraftOverrides(plan, draft.eventCue, draft.competingAction);
       setPlan(adjustedPlan);
@@ -159,7 +162,7 @@ export default function PlanScreen() {
       .getPreferences()
       .then((stored) => setPreferences(stored ?? fallbackPreferences))
       .catch(() => undefined);
-  }, [assessment, category, draft.competingAction, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.valueAnchor, linkedAttemptId, restoring, selectedDuration, setPlan, setRoadmap, taskText]);
+  }, [assessment, category, draft.activationSource, draft.anxietyReliefPreference, draft.competingAction, draft.emotionalResponses, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.valueAnchor, linkedAttemptId, restoring, selectedDuration, setPlan, setRoadmap, taskText]);
 
   function openRoadmap() {
     if (!activeRoadmap) updateAssessment({ roadmapRequested: true });
@@ -375,6 +378,7 @@ export default function PlanScreen() {
         {activePlan.valueAnchor ? <PlanRow label="この一歩の意味" value={activePlan.valueAnchor} /> : null}
         {activePlan.returnCue ? <PlanRow label="脱線・失念から戻る目印" value={activePlan.returnCue} /> : null}
         {activePlan.reassuranceAction ? <PlanRow label="忘れる心配を頭から下ろす" value={activePlan.reassuranceAction} /> : null}
+        {activePlan.emotionSupport ? <PlanRow label="不安・緊張を少し下げる" value={activePlan.emotionSupport} /> : null}
       </View>
 
       <AppText variant="label" style={styles.sectionTitle}>

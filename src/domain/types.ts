@@ -106,6 +106,8 @@ export interface InterventionPlan {
   returnCue: string | null;
   /** A way to set down worry about forgetting without holding it in mind. */
   reassuranceAction: string | null;
+  /** Optional support chosen from the person's description of anxiety or freezing. */
+  emotionSupport: string | null;
   supportiveMessage: string;
   bottlenecks: Bottleneck[];
   source: "local" | "ai";
@@ -131,12 +133,31 @@ export const ROADMAP_CONCERNS = [
 
 export type RoadmapConcern = (typeof ROADMAP_CONCERNS)[number];
 
+export const EMOTIONAL_RESPONSES = [
+  "anxiety",
+  "boredom",
+  "shame",
+  "pressure",
+  "unclear",
+] as const;
+
+export type EmotionalResponse = (typeof EMOTIONAL_RESPONSES)[number];
+
+export const ANXIETY_RELIEF_PREFERENCES = ["yes", "unsure", "no"] as const;
+export type AnxietyReliefPreference = (typeof ANXIETY_RELIEF_PREFERENCES)[number];
+
+export const ACTIVATION_SOURCES = ["fatigue", "freeze", "both", "unclear"] as const;
+export type ActivationSource = (typeof ACTIVATION_SOURCES)[number];
+
 /**
  * A brief, user-selected description of what is unclear about a large task.
  * It is used to adapt the orientation steps; it is not a diagnostic label.
  */
 export interface RoadmapConsultation {
-  concern: RoadmapConcern;
+  /** New roadmaps keep up to three concerns in the person's chosen priority order. */
+  concerns?: RoadmapConcern[];
+  /** Backward-compatible field for roadmaps created before multi-selection. */
+  concern?: RoadmapConcern;
   knownContext: string | null;
 }
 

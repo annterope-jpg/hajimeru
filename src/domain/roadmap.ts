@@ -121,6 +121,15 @@ export const ROADMAP_CONCERN_COPY: Readonly<
   },
 };
 
+export function getRoadmapConcerns(consultation?: RoadmapConsultation): RoadmapConcern[] {
+  const selected = consultation?.concerns?.length
+    ? consultation.concerns
+    : consultation?.concern
+      ? [consultation.concern]
+      : [];
+  return [...new Set(selected)].slice(0, 3);
+}
+
 export function createLocalRoadmap({
   taskText,
   category,
@@ -131,13 +140,14 @@ export function createLocalRoadmap({
 }: CreateLocalRoadmapInput): TaskRoadmap {
   const template = TEMPLATES[category];
   const goalState = desiredOutcome?.trim() || template.goalState;
-  const concernCopy = consultation ? ROADMAP_CONCERN_COPY[consultation.concern] : null;
-  const later = concernCopy
-    ? [concernCopy.step, ...template.later.slice(1)]
+  const concerns = getRoadmapConcerns(consultation);
+  const concernCopies = concerns.map((concern) => ROADMAP_CONCERN_COPY[concern]);
+  const later = concernCopies.length
+    ? [...concernCopies.map(({ step }) => step), ...template.later].slice(0, 3)
     : template.later;
   const knownContext = consultation?.knownContext?.trim();
-  const framing = concernCopy
-    ? `${template.framing} ${concernCopy.reflection}${knownContext ? ` 「${knownContext}」は入口の手がかりとして扱います。` : ''}`
+  const framing = concernCopies.length
+    ? `${template.framing} ${concernCopies.map(({ reflection }, index) => `優先${index + 1}：${reflection}`).join(' ')}${knownContext ? ` 「${knownContext}」は入口の手がかりとして扱います。` : ''}`
     : template.framing;
   return {
     taskText,
@@ -158,7 +168,11 @@ export function createLocalRoadmap({
       })),
     ],
     consultation: consultation
-      ? { concern: consultation.concern, knownContext: knownContext || null }
+      ? {
+          concerns,
+          concern: concerns[0],
+          knownContext: knownContext || null,
+        }
       : undefined,
     createdAt,
   };

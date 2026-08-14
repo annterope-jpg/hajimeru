@@ -66,6 +66,7 @@ function makeAttempt({
       valueAnchor: null,
       returnCue: null,
       reassuranceAction: null,
+      emotionSupport: null,
       supportiveMessage: '最初の一歩だけです。',
       bottlenecks: [...bottlenecks],
       source: 'local',

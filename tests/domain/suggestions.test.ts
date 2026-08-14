@@ -94,6 +94,7 @@ describe("createLocalInterventionPlan", () => {
       valueAnchor: null,
       returnCue: null,
       reassuranceAction: null,
+      emotionSupport: null,
       bottlenecks: ["rewardDistance", "competingReward"],
       source: "local",
       createdAt: "2026-08-13T12:00:00.000Z",
@@ -138,5 +139,19 @@ describe("createLocalInterventionPlan", () => {
     });
     expect(cuePlan.returnCue).toContain("戻るための目印");
     expect(cuePlan.reassuranceAction).toBeNull();
+  });
+
+  it("changes support when anxiety reduction or a freeze response is explicitly selected", () => {
+    const plan = createLocalInterventionPlan({
+      taskText: "メールを返信する",
+      assessment: assessBottlenecks({ aversion: 9, lowActivation: 8 }),
+      emotionalResponses: ["anxiety"],
+      anxietyReliefPreference: "yes",
+      activationSource: "freeze",
+    });
+
+    expect(plan.emotionSupport).toContain("不確かなことを1つ");
+    expect(plan.activationRitual).toContain("息を長く1回");
+    expect(plan.supportiveMessage).toContain("不安を少し下げて");
   });
 });

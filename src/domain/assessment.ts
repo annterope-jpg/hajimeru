@@ -35,7 +35,7 @@ export const BOTTLENECK_LABELS: Readonly<Record<Bottleneck, string>> = {
   aversion: "嫌悪・面倒さ",
   cueWeakness: "思い出すきっかけが弱い",
   competingReward: "スマホなど別の行動が強い",
-  rewardDistance: "手応えや報酬が遠い",
+  rewardDistance: "開始直後の変化が見えにくい",
   timeAmbiguity: "始めるタイミングが曖昧",
 };
 

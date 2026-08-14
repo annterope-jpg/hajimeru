@@ -52,7 +52,7 @@ export default function OnboardingScreen() {
       <Card tone="amber" style={styles.modelCard}>
         <AppText variant="label">できない＝意志が弱い、とは限りません</AppText>
         <AppText variant="caption" color={colors.inkMuted}>
-          課題が大きく曖昧、結果が遠い、身体が重い、イヤな感じが強い——今の開始コストが目標の価値を上回ると、やりたいことでも止まりやすくなります。
+          課題が大きく曖昧、開始直後の変化が見えない、身体が重い、不安やイヤな感じが強い——今の開始コストが目標の価値を上回ると、やりたいことでも止まりやすくなります。
         </AppText>
       </Card>
 
