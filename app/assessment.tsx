@@ -290,10 +290,10 @@ function AdvancedAssessment() {
     },
     {
       key: 'competingReward' as const,
-      title: '代わりにしたくなることは、どのくらい強いですか？',
-      low: '特にない',
-      high: 'とても強い',
-      reflection: '高い場合は、スマホなどに小さな摩擦を足す提案にします。',
+      title: '課題を考えたとき、別の行動へ逃げ込みたくなる強さはどのくらいですか？',
+      low: '特に移らない',
+      high: 'すぐ移りたくなる',
+      reflection: 'スマホなどが悪いという意味ではありません。不安・退屈・イヤさから一時的に離れやすい行動が近くにあるかを確認し、必要なら開始中だけ小さな摩擦を置きます。',
     },
   ];
 
@@ -367,11 +367,11 @@ function AdvancedAssessment() {
           />
         </Card>
         <Card>
-          <AppText variant="label">代わりにしやすいことは？（任意）</AppText>
-          <AppText variant="caption" color={colors.inkMuted}>入力すると、その行動に小さな距離を置く提案に反映します。</AppText>
+          <AppText variant="label">始める前や途中で、つい逃げ込みやすいことは？（任意）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>休憩や楽しみを禁止する質問ではありません。課題から反射的に離れやすい行動を入力すると、最初のタイマー中だけ「開くまでに一手間置く」提案へ反映します。</AppText>
           <TextInput
             accessibilityLabel="競合行動"
-            placeholder="例：スマホ、動画、ゲーム"
+            placeholder="例：スマホを開く、動画を見る、別の片付けを始める"
             placeholderTextColor="#89948E"
             value={assessment.competingAction ?? ''}
             onChangeText={(competingAction) => updateAssessment({ competingAction })}

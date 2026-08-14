@@ -34,7 +34,7 @@ const BOTTLENECK_EXPLANATIONS: Record<keyof typeof BOTTLENECK_LABELS, string> = 
   lowActivation: '眠さやぼんやり、身体の重さが、動き出すためのコストを上げています。',
   aversion: '退屈、不安、面倒さなどから離れると一時的に楽になるため、回避が起きやすい状態です。',
   cueWeakness: '脱線したり次の行動を見失ったりしたときに、外から戻る目印が不足しています。',
-  competingReward: 'スマホなど、すぐ楽になる別の行動のほうが近く選びやすい状態です。',
+  competingReward: 'スマホなど、一時的に課題のイヤさから離れられる行動が近く、反射的に移りやすい状態です。',
   rewardDistance: '開始後1〜3分の変化が見えにくく、「少し進んだ」という結果をすぐ受け取りにくい状態です。',
   timeAmbiguity: '開始時点が「あとで」のままで、行動へ切り替える瞬間が見えにくい状態です。',
 };
@@ -509,7 +509,7 @@ function applyDraftOverrides(plan: InterventionPlan, eventCue?: string, competin
     ...plan,
     startCue: eventCue?.trim() || plan.startCue,
     distractionFriction: competingAction?.trim()
-      ? `${competingAction.trim()}を手の届きにくい状態にする`
+      ? `最初のタイマー中だけ、「${competingAction.trim()}」を始めるまでに一手間置く`
       : plan.distractionFriction,
   };
 }

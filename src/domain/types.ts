@@ -159,6 +159,8 @@ export interface RoadmapConsultation {
   /** Backward-compatible field for roadmaps created before multi-selection. */
   concern?: RoadmapConcern;
   knownContext: string | null;
+  /** Optional one-line clarification for each selected concern. */
+  details?: Partial<Record<RoadmapConcern, string>>;
 }
 
 /**

@@ -35,6 +35,7 @@ export interface AssessmentDraft {
   roadmapConcern?: RoadmapConcern;
   roadmapConcerns?: RoadmapConcern[];
   roadmapKnownContext?: string;
+  roadmapDetails?: Partial<Record<RoadmapConcern, string>>;
 }
 
 export interface ReflectionDraft {
@@ -260,6 +261,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
         roadmapConcern: attempt.roadmap?.consultation?.concern,
         roadmapConcerns: attempt.roadmap?.consultation?.concerns,
         roadmapKnownContext: attempt.roadmap?.consultation?.knownContext ?? undefined,
+        roadmapDetails: attempt.roadmap?.consultation?.details,
       },
       selectedDurationMinutes: attempt.plan.durationMinutes,
       activeAttemptId: attempt.id,

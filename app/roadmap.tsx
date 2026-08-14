@@ -33,6 +33,13 @@ const CONCERN_CHOICES: { value: RoadmapConcern; label: string; description: stri
   { value: 'endPoint', label: 'どこまででよいか分からない', description: '終わりが見えず手を付けにくい' },
 ];
 
+const DETAIL_PROMPTS: Partial<Record<RoadmapConcern, { label: string; placeholder: string }>> = {
+  entry: { label: '最初に触れる場所・物は？', placeholder: '例：床の手前にある大きな袋' },
+  scope: { label: '今回だけ扱う範囲は？', placeholder: '例：床の大きな物と、捨てられる物だけ' },
+  information: { label: 'まず確認したい物・情報は？', placeholder: '例：捨て方が分からない物の分類' },
+  decisions: { label: '迷った物は、いったんどう扱いますか？', placeholder: '例：保留箱へ入れて今日は決めない' },
+};
+
 export default function RoadmapScreen() {
   const roadmap = useAppStore((state) => state.activeRoadmap);
   const taskText = useAppStore((state) => state.taskText);
@@ -80,6 +87,11 @@ export default function RoadmapScreen() {
                 <View style={styles.reflectionCopy}>
                   <AppText variant="caption" color={colors.primary}>{copy.label}</AppText>
                   <AppText variant="caption" color={colors.inkMuted}>{copy.reflection}</AppText>
+                  {consultation.details?.[concern] ? (
+                    <AppText variant="caption" color={colors.ink}>具体化：{consultation.details[concern]}</AppText>
+                  ) : concern === 'endPoint' ? (
+                    <AppText variant="caption" color={colors.ink}>区切り：{roadmap.goalState}</AppText>
+                  ) : null}
                 </View>
               </View>
             );
@@ -150,6 +162,9 @@ function RoadmapConsultation() {
   );
   const [knownContext, setKnownContext] = useState(draft.roadmapKnownContext ?? '');
   const [desiredOutcome, setDesiredOutcome] = useState(draft.desiredOutcome ?? '');
+  const [details, setDetails] = useState<Partial<Record<RoadmapConcern, string>>>(
+    draft.roadmapDetails ?? {},
+  );
 
   function createRoadmap() {
     if (!taskText || !plan || !concerns.length) return;
@@ -157,12 +172,14 @@ function RoadmapConsultation() {
       concerns,
       concern: concerns[0],
       knownContext: knownContext.trim() || null,
+      details,
     };
     updateAssessment({
       roadmapRequested: true,
       roadmapConcern: concerns[0],
       roadmapConcerns: concerns,
       roadmapKnownContext: consultation.knownContext ?? undefined,
+      roadmapDetails: details,
       desiredOutcome,
     });
     setRoadmap(
@@ -216,6 +233,30 @@ function RoadmapConsultation() {
             showPriority
           />
         </Card>
+        {concerns.some((concern) => DETAIL_PROMPTS[concern]) ? (
+          <Card tone="blue">
+            <AppText variant="label">選んだ迷いを、もう少しだけ具体化できます（任意）</AppText>
+            <AppText variant="caption" color={colors.inkMuted}>入力した言葉を、そのまま範囲・確認事項・保留ルールとして地図のステップに使います。</AppText>
+            {concerns.map((concern) => {
+              const prompt = DETAIL_PROMPTS[concern];
+              if (!prompt) return null;
+              return (
+                <View key={concern} style={styles.detailEditor}>
+                  <AppText variant="caption" color={colors.primary}>{prompt.label}</AppText>
+                  <TextInput
+                    accessibilityLabel={prompt.label}
+                    value={details[concern] ?? ''}
+                    onChangeText={(value) => setDetails((current) => ({ ...current, [concern]: value }))}
+                    placeholder={prompt.placeholder}
+                    placeholderTextColor="#89948E"
+                    maxLength={120}
+                    style={styles.smallInput}
+                  />
+                </View>
+              );
+            })}
+          </Card>
+        ) : null}
         <Card>
           <AppText variant="label">いま分かっている手がかりはありますか？（任意）</AppText>
           <AppText variant="caption" color={colors.inkMuted}>場所、期限、手元にある物など、短くて大丈夫です。</AppText>
@@ -254,6 +295,7 @@ const styles = StyleSheet.create({
   consultationList: { marginTop: spacing.lg, gap: spacing.md },
   consultationFooter: { gap: spacing.xs },
   consultationCard: { gap: spacing.xs, marginBottom: spacing.lg },
+  detailEditor: { gap: spacing.xs, marginTop: spacing.sm },
   reflectionRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginTop: spacing.xs },
   reflectionCopy: { flex: 1, gap: 2 },
   priorityBadge: {

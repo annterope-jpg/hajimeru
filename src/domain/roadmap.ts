@@ -130,6 +130,44 @@ export function getRoadmapConcerns(consultation?: RoadmapConsultation): RoadmapC
   return [...new Set(selected)].slice(0, 3);
 }
 
+function shortDetail(value: string | null | undefined, maxLength = 100): string | null {
+  const normalized = value?.normalize('NFKC').replace(/\s+/gu, ' ').trim();
+  if (!normalized) return null;
+  const characters = Array.from(normalized);
+  return characters.length <= maxLength
+    ? normalized
+    : `${characters.slice(0, maxLength).join('')}…`;
+}
+
+function createConcernStep(
+  concern: RoadmapConcern,
+  detail: string | null,
+  desiredOutcome: string | null,
+  knownContext: string | null,
+  isFirstConcern: boolean,
+): Omit<RoadmapStep, 'id' | 'kind'> {
+  const fallback = ROADMAP_CONCERN_COPY[concern].step;
+  const clue = isFirstConcern && knownContext ? ` 手がかり：「${knownContext}」` : '';
+
+  if (concern === 'entry' && detail) {
+    return { title: '触る場所・物をここに決める', description: `「${detail}」から触る。${clue}`.trim() };
+  }
+  if (concern === 'scope' && detail) {
+    return { title: '今回の範囲をここに絞る', description: `「${detail}」だけを今回の範囲にし、残りは地図の外に置く。${clue}`.trim() };
+  }
+  if (concern === 'information' && detail) {
+    return { title: '最初に確認することを1つにする', description: `まず「${detail}」だけを確認し、ほかの不明点は後ろへ送る。${clue}`.trim() };
+  }
+  if (concern === 'decisions' && detail) {
+    return { title: '迷ったときの扱いを先に決める', description: `迷ったら「${detail}」として扱い、その場で決め切らない。${clue}`.trim() };
+  }
+  if (concern === 'endPoint' && (desiredOutcome || detail)) {
+    const boundary = desiredOutcome || detail;
+    return { title: '今日の区切りをこの状態にする', description: `「${boundary}」までを一区切りにし、それ以上は今日の成功条件にしない。${clue}`.trim() };
+  }
+  return { ...fallback, description: `${fallback.description}${clue}` };
+}
+
 export function createLocalRoadmap({
   taskText,
   category,
@@ -139,15 +177,31 @@ export function createLocalRoadmap({
   createdAt = new Date().toISOString(),
 }: CreateLocalRoadmapInput): TaskRoadmap {
   const template = TEMPLATES[category];
-  const goalState = desiredOutcome?.trim() || template.goalState;
+  const normalizedOutcome = shortDetail(desiredOutcome, 140);
+  const goalState = normalizedOutcome || template.goalState;
   const concerns = getRoadmapConcerns(consultation);
   const concernCopies = concerns.map((concern) => ROADMAP_CONCERN_COPY[concern]);
+  const knownContext = shortDetail(consultation?.knownContext, 100);
+  const details = Object.fromEntries(
+    concerns.flatMap((concern) => {
+      const detail = shortDetail(consultation?.details?.[concern], 100);
+      return detail ? [[concern, detail] as const] : [];
+    }),
+  ) as Partial<Record<RoadmapConcern, string>>;
+  const concernSteps = concerns.map((concern, index) =>
+    createConcernStep(
+      concern,
+      details[concern] ?? null,
+      normalizedOutcome,
+      knownContext,
+      index === 0,
+    ),
+  );
   const later = concernCopies.length
-    ? [...concernCopies.map(({ step }) => step), ...template.later].slice(0, 3)
+    ? [...concernSteps, ...template.later].slice(0, 3)
     : template.later;
-  const knownContext = consultation?.knownContext?.trim();
   const framing = concernCopies.length
-    ? `${template.framing} ${concernCopies.map(({ reflection }, index) => `優先${index + 1}：${reflection}`).join(' ')}${knownContext ? ` 「${knownContext}」は入口の手がかりとして扱います。` : ''}`
+    ? `${template.framing} 「今」の後は、選んだ迷いを優先順に扱い、今日のまとまりを作ります。`
     : template.framing;
   return {
     taskText,
@@ -158,7 +212,7 @@ export function createLocalRoadmap({
       {
         id: 'now',
         kind: 'now',
-        title: 'いま：入口を作る',
+        title: concerns.includes('entry') ? 'いま：入口を作る' : 'いま：最初の30秒',
         description: firstAction,
       },
       ...later.map((step, index) => ({
@@ -172,6 +226,7 @@ export function createLocalRoadmap({
           concerns,
           concern: concerns[0],
           knownContext: knownContext || null,
+          ...(Object.keys(details).length ? { details } : {}),
         }
       : undefined,
     createdAt,

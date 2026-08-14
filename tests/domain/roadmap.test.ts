@@ -56,8 +56,7 @@ describe('createLocalRoadmap', () => {
       knownContext: '締切は月末、必要書類は不明',
     });
     expect(roadmap.steps[1]).toMatchObject({ title: '分かっていることを1か所に集める' });
-    expect(roadmap.framing).toContain('今ある物');
-    expect(roadmap.framing).toContain('締切は月末');
+    expect(roadmap.steps[1]?.description).toContain('締切は月末');
   });
 
   it('keeps multiple concerns in priority order and reflects each in the roadmap', () => {
@@ -77,8 +76,33 @@ describe('createLocalRoadmap', () => {
       '今決めないことを保留にする',
       '今日の一区切りを1つ決める',
     ]);
-    expect(roadmap.framing).toContain('優先1');
-    expect(roadmap.framing).toContain('優先3');
+    expect(roadmap.framing).toContain('優先順');
+  });
+
+  it('uses the entered boundary, scope, and parking rule directly in later steps', () => {
+    const roadmap = createLocalRoadmap({
+      taskText: '部屋全体を片付けたい',
+      category: 'tidying',
+      firstAction: '目の前の物を1つだけ手に取る',
+      desiredOutcome: '大きな物と床の捨てられる物だけ処分できている',
+      consultation: {
+        concerns: ['endPoint', 'scope', 'decisions'],
+        knownContext: '書類や細かい物は多い',
+        details: {
+          scope: '床の大きな物と、明らかに捨てられる物だけ',
+          decisions: '迷う物は保留箱へ入れる',
+        },
+      },
+    });
+
+    expect(roadmap.steps[0]?.title).toBe('いま：最初の30秒');
+    expect(roadmap.steps[1]?.description).toContain('大きな物と床の捨てられる物だけ処分');
+    expect(roadmap.steps[2]?.description).toContain('床の大きな物と、明らかに捨てられる物だけ');
+    expect(roadmap.steps[3]?.description).toContain('迷う物は保留箱へ入れる');
+    expect(roadmap.consultation?.details).toEqual({
+      scope: '床の大きな物と、明らかに捨てられる物だけ',
+      decisions: '迷う物は保留箱へ入れる',
+    });
   });
 
   it.each(['email', 'bathing', 'studying', 'transition', 'other'] as const)(
