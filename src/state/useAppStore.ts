@@ -1,7 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-import type { InterventionPlan, TaskAttempt, TaskRoadmap } from '@/domain';
+import type {
+  ActivationSource,
+  AnxietyReliefPreference,
+  EmotionalResponse,
+  InterventionPlan,
+  RoadmapConcern,
+  TaskAttempt,
+  TaskRoadmap,
+} from '@/domain';
 
 const SHELL_KEY = 'hajimeru.shell.v1';
 
@@ -15,8 +23,19 @@ export interface AssessmentDraft {
   competingReward?: number;
   eventCue?: string;
   competingAction?: string;
+  /** A person-chosen reminder of why a small step matters; it never affects scoring. */
+  valueAnchor?: string;
+  /** Worry about forgetting, kept distinct from actual loss-of-track/cue difficulty. */
+  forgettingWorry?: number;
+  emotionalResponses?: EmotionalResponse[];
+  anxietyReliefPreference?: AnxietyReliefPreference;
+  activationSource?: ActivationSource;
   roadmapRequested?: boolean;
   desiredOutcome?: string;
+  roadmapConcern?: RoadmapConcern;
+  roadmapConcerns?: RoadmapConcern[];
+  roadmapKnownContext?: string;
+  roadmapDetails?: Partial<Record<RoadmapConcern, string>>;
 }
 
 export interface ReflectionDraft {
@@ -236,6 +255,13 @@ export const useAppStore = create<ShellState>((set, get) => ({
         cueWeakness: answers.cueWeakness ?? undefined,
         competingReward: answers.competingReward ?? undefined,
         eventCue: attempt.plan.startCue,
+        valueAnchor: attempt.plan.valueAnchor ?? undefined,
+        roadmapRequested: attempt.roadmap !== undefined && attempt.roadmap !== null,
+        desiredOutcome: attempt.roadmap?.goalState,
+        roadmapConcern: attempt.roadmap?.consultation?.concern,
+        roadmapConcerns: attempt.roadmap?.consultation?.concerns,
+        roadmapKnownContext: attempt.roadmap?.consultation?.knownContext ?? undefined,
+        roadmapDetails: attempt.roadmap?.consultation?.details,
       },
       selectedDurationMinutes: attempt.plan.durationMinutes,
       activeAttemptId: attempt.id,

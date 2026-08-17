@@ -1,4 +1,10 @@
-import type { RoadmapStep, TaskCategory, TaskRoadmap } from './types';
+import type {
+  RoadmapConcern,
+  RoadmapConsultation,
+  RoadmapStep,
+  TaskCategory,
+  TaskRoadmap,
+} from './types';
 
 interface RoadmapTemplate {
   goalState: string;
@@ -81,7 +87,85 @@ export interface CreateLocalRoadmapInput {
   category: TaskCategory;
   firstAction: string;
   desiredOutcome?: string;
+  consultation?: RoadmapConsultation;
   createdAt?: string;
+}
+
+export const ROADMAP_CONCERN_COPY: Readonly<
+  Record<RoadmapConcern, { label: string; reflection: string; step: Omit<RoadmapStep, 'id' | 'kind'> }>
+> = {
+  entry: {
+    label: 'どこから始めるか決められない',
+    reflection: '入口を1つだけ決め、次の判断を後ろへ送る形にしました。',
+    step: { title: '入口を1つに決める', description: '最初の一歩の次に触る場所・画面・道具を1つだけ選ぶ。' },
+  },
+  scope: {
+    label: '範囲が広すぎて圧倒される',
+    reflection: '今日扱う範囲を小さく囲い、残りをいったん地図の外に置きました。',
+    step: { title: '今日の範囲を小さく囲う', description: '場所・時間・対象のどれか1つで、今日触る境界を決める。' },
+  },
+  information: {
+    label: '必要な物や情報が分からない',
+    reflection: '「今ある物」と「あとで調べること」を分ける順番にしました。',
+    step: { title: '分かっていることを1か所に集める', description: '今ある物や情報だけを置き、不足は「調べる」に分ける。' },
+  },
+  decisions: {
+    label: '決めることが多すぎる',
+    reflection: '今決めないことを保留できる順番にし、判断を減らしました。',
+    step: { title: '今決めないことを保留にする', description: '迷う物・迷う選択を1つだけ「あとで決める」に移す。' },
+  },
+  endPoint: {
+    label: 'どこまででよいか分からない',
+    reflection: '今日の一区切りを先に置き、終わりのない計画にしないようにしました。',
+    step: { title: '今日の一区切りを1つ決める', description: '完了ではなく「ここまでなら十分」を短い言葉で決める。' },
+  },
+};
+
+export function getRoadmapConcerns(consultation?: RoadmapConsultation): RoadmapConcern[] {
+  const selected = consultation?.concerns?.length
+    ? consultation.concerns
+    : consultation?.concern
+      ? [consultation.concern]
+      : [];
+  return [...new Set(selected)].slice(0, 3);
+}
+
+function shortDetail(value: string | null | undefined, maxLength = 100): string | null {
+  const normalized = value?.normalize('NFKC').replace(/\s+/gu, ' ').trim();
+  if (!normalized) return null;
+  const characters = Array.from(normalized);
+  return characters.length <= maxLength
+    ? normalized
+    : `${characters.slice(0, maxLength).join('')}…`;
+}
+
+function createConcernStep(
+  concern: RoadmapConcern,
+  detail: string | null,
+  desiredOutcome: string | null,
+  knownContext: string | null,
+  isFirstConcern: boolean,
+): Omit<RoadmapStep, 'id' | 'kind'> {
+  const fallback = ROADMAP_CONCERN_COPY[concern].step;
+  const clue = isFirstConcern && knownContext ? ` 手がかり：「${knownContext}」` : '';
+
+  if (concern === 'entry' && detail) {
+    return { title: '触る場所・物をここに決める', description: `「${detail}」から触る。${clue}`.trim() };
+  }
+  if (concern === 'scope' && detail) {
+    return { title: '今回の範囲をここに絞る', description: `「${detail}」だけを今回の範囲にし、残りは地図の外に置く。${clue}`.trim() };
+  }
+  if (concern === 'information' && detail) {
+    return { title: '最初に確認することを1つにする', description: `まず「${detail}」だけを確認し、ほかの不明点は後ろへ送る。${clue}`.trim() };
+  }
+  if (concern === 'decisions' && detail) {
+    return { title: '迷ったときの扱いを先に決める', description: `迷ったら「${detail}」として扱い、その場で決め切らない。${clue}`.trim() };
+  }
+  if (concern === 'endPoint' && (desiredOutcome || detail)) {
+    const boundary = desiredOutcome || detail;
+    return { title: '今日の区切りをこの状態にする', description: `「${boundary}」までを一区切りにし、それ以上は今日の成功条件にしない。${clue}`.trim() };
+  }
+  return { ...fallback, description: `${fallback.description}${clue}` };
 }
 
 export function createLocalRoadmap({
@@ -89,28 +173,62 @@ export function createLocalRoadmap({
   category,
   firstAction,
   desiredOutcome,
+  consultation,
   createdAt = new Date().toISOString(),
 }: CreateLocalRoadmapInput): TaskRoadmap {
   const template = TEMPLATES[category];
-  const goalState = desiredOutcome?.trim() || template.goalState;
+  const normalizedOutcome = shortDetail(desiredOutcome, 140);
+  const goalState = normalizedOutcome || template.goalState;
+  const concerns = getRoadmapConcerns(consultation);
+  const concernCopies = concerns.map((concern) => ROADMAP_CONCERN_COPY[concern]);
+  const knownContext = shortDetail(consultation?.knownContext, 100);
+  const details = Object.fromEntries(
+    concerns.flatMap((concern) => {
+      const detail = shortDetail(consultation?.details?.[concern], 100);
+      return detail ? [[concern, detail] as const] : [];
+    }),
+  ) as Partial<Record<RoadmapConcern, string>>;
+  const concernSteps = concerns.map((concern, index) =>
+    createConcernStep(
+      concern,
+      details[concern] ?? null,
+      normalizedOutcome,
+      knownContext,
+      index === 0,
+    ),
+  );
+  const later = concernCopies.length
+    ? [...concernSteps, ...template.later].slice(0, 3)
+    : template.later;
+  const framing = concernCopies.length
+    ? `${template.framing} 「今」の後は、選んだ迷いを優先順に扱い、今日のまとまりを作ります。`
+    : template.framing;
   return {
     taskText,
     category,
     goalState,
-    framing: template.framing,
+    framing,
     steps: [
       {
         id: 'now',
         kind: 'now',
-        title: 'いま：入口を作る',
+        title: concerns.includes('entry') ? 'いま：入口を作る' : 'いま：最初の30秒',
         description: firstAction,
       },
-      ...template.later.map((step, index) => ({
+      ...later.map((step, index) => ({
         ...step,
         id: `phase-${index + 1}`,
         kind: index === 0 ? ('next' as const) : ('later' as const),
       })),
     ],
+    consultation: consultation
+      ? {
+          concerns,
+          concern: concerns[0],
+          knownContext: knownContext || null,
+          ...(Object.keys(details).length ? { details } : {}),
+        }
+      : undefined,
     createdAt,
   };
 }

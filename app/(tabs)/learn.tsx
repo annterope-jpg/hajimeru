@@ -9,7 +9,7 @@ import { radii, spacing } from '@/theme/spacing';
 
 const axes = [
   ['git-branch-outline', '判断が多い', '最初の動作や終わりが曖昧で、始める前に選択が積み重なる。'],
-  ['hourglass-outline', '手応えが遠い', '今ある面倒さに対し、得られる結果が先に感じられる。'],
+  ['hourglass-outline', '開始直後の変化が見えにくい', '始めて1〜3分では「少し進んだ」と分かる結果が目に入りにくい。'],
   ['battery-dead-outline', '覚醒が低い', '眠さ、疲労、ぼんやりが身体を動かすコストを上げる。'],
   ['cloud-outline', 'イヤな感じが強い', '退屈、不安、羞恥、自己批判から離れると一時的に楽になる。'],
   ['notifications-off-outline', '合図が弱い', '「あとで」の意図を、ちょうどよい瞬間に思い出しにくい。'],
@@ -36,6 +36,13 @@ export default function LearnScreen() {
         <AppText variant="heading">目標の価値 ＜ 今の開始コスト</AppText>
         <AppText variant="caption" color={colors.inkMuted}>
           締切が近づくと、優先順位が明確になり覚醒も上がるため、急に動けることがあります。これは「本当はいつでもできた」という意味ではありません。
+        </AppText>
+      </Card>
+
+      <Card tone="blue" style={styles.noteCard}>
+        <AppText variant="label">イヤさと身体の重さも、種類で支え方が変わります</AppText>
+        <AppText variant="caption" color={colors.inkMuted}>
+          不安を少し下げると動きやすい場面では、分からなさを1つに絞って確認できる一歩へ。眠気や疲れには身体を起こす準備、不安で固まる反応には緊張を少し下げる準備を提案します。どれにも当てはまらない場合は、嫌な感じが残ったまま30秒だけ始める方法を使えます。
         </AppText>
       </Card>
 

@@ -46,13 +46,13 @@ export default function OnboardingScreen() {
         やる気を待たずに、{`\n`}最初の一歩へ。
       </AppText>
       <AppText color={colors.inkMuted} style={styles.lead}>
-        「はじめる」は、したい気持ちを採点せず、着手しづらい日常の行動を小さく整えるセルフマネジメントツールです。
+        「いま、はじめる」は、したい気持ちを採点せず、着手しづらい日常の行動を小さく整えるセルフマネジメントツールです。
       </AppText>
 
       <Card tone="amber" style={styles.modelCard}>
         <AppText variant="label">できない＝意志が弱い、とは限りません</AppText>
         <AppText variant="caption" color={colors.inkMuted}>
-          課題が大きく曖昧、結果が遠い、身体が重い、イヤな感じが強い——今の開始コストが目標の価値を上回ると、やりたいことでも止まりやすくなります。
+          課題が大きく曖昧、開始直後の変化が見えない、身体が重い、不安やイヤな感じが強い——今の開始コストが目標の価値を上回ると、やりたいことでも止まりやすくなります。
         </AppText>
       </Card>
 
