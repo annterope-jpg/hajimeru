@@ -155,3 +155,71 @@ describe("createLocalInterventionPlan", () => {
     expect(plan.supportiveMessage).toContain("不安を少し下げて");
   });
 });
+
+describe("first action responds to the assessment", () => {
+  const tidying = "散らかった部屋を片付けたい";
+
+  it("chooses a friction-reducing action when aversion is the top bottleneck", () => {
+    const assessment = assessBottlenecks({
+      taskClarity: true,
+      aversion: 9,
+      lowActivation: 1,
+    });
+
+    expect(assessment.primaryBottlenecks).toContain("aversion");
+    const plan = createLocalInterventionPlan({ taskText: tidying, assessment });
+    expect(plan.firstAction).toBe("ゴミ袋を1枚だけ取り出す");
+  });
+
+  it("chooses a concrete action when the first step is unclear", () => {
+    const assessment = assessBottlenecks({
+      taskClarity: false,
+      aversion: 1,
+      lowActivation: 1,
+    });
+
+    const plan = createLocalInterventionPlan({ taskText: tidying, assessment });
+    expect(plan.firstAction).toBe("目の前の物を1つだけ手に取る");
+  });
+
+  it("varies the action for the same task when the assessment differs", () => {
+    const unclear = createLocalInterventionPlan({
+      taskText: tidying,
+      assessment: assessBottlenecks({ taskClarity: false, aversion: 1, lowActivation: 1 }),
+    });
+    const averse = createLocalInterventionPlan({
+      taskText: tidying,
+      assessment: assessBottlenecks({ taskClarity: true, aversion: 9, lowActivation: 1 }),
+    });
+
+    expect(unclear.firstAction).not.toBe(averse.firstAction);
+  });
+
+  it("interrupts the competing action when that is the top bottleneck", () => {
+    const assessment = assessBottlenecks({
+      taskClarity: true,
+      aversion: 1,
+      lowActivation: 1,
+      competingReward: 9,
+    });
+
+    const plan = createLocalInterventionPlan({
+      taskText: "ゲームをやめて次のことに移りたい",
+      assessment,
+    });
+    expect(plan.firstAction).toBe("今見ている画面をいったん閉じる");
+  });
+
+  it("falls back to the first candidate when no rationale matches", () => {
+    const assessment = assessBottlenecks({
+      taskClarity: true,
+      aversion: 1,
+      lowActivation: 9,
+    });
+
+    // tidying offers no activate_body candidate; behaviour must stay defined.
+    const plan = createLocalInterventionPlan({ taskText: tidying, assessment });
+    expect(plan.firstAction).toBe("目の前の物を1つだけ手に取る");
+    expect(plan.activationRitual).toBe("立って、水を一口飲む");
+  });
+});
