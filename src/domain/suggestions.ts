@@ -7,6 +7,7 @@ import type {
   EmotionalResponse,
   InterventionPlan,
   Score0To10,
+  SuggestionRationaleTag,
   TaskCategory,
   TimerMinutes,
 } from "./types";
@@ -169,6 +170,43 @@ function includes(
   return bottlenecks.includes(bottleneck);
 }
 
+/**
+ * Maps a bottleneck to the rationale that the first action itself can address.
+ * Cue, timing and reward distance are deliberately absent: they are handled by
+ * startCue, returnCue and microReward, so they fall through to the next
+ * bottleneck instead of distorting the opening action.
+ */
+const BOTTLENECK_RATIONALE: Partial<
+  Record<Bottleneck, SuggestionRationaleTag>
+> = {
+  taskClarity: "make_concrete",
+  lowActivation: "activate_body",
+  aversion: "reduce_friction",
+  competingReward: "interrupt_competition",
+};
+
+/**
+ * Picks the opening action that matches the highest-ranked bottleneck the action
+ * can act on. Falls back to the first candidate so behaviour stays defined when
+ * a category offers no suggestion with the preferred rationale.
+ */
+export function selectActionForBottlenecks(
+  suggestions: readonly ActionSuggestion[],
+  bottlenecks: readonly Bottleneck[],
+): ActionSuggestion | undefined {
+  for (const bottleneck of bottlenecks) {
+    const rationale = BOTTLENECK_RATIONALE[bottleneck];
+    if (!rationale) continue;
+
+    const match = suggestions.find(
+      (suggestion) => suggestion.rationaleTag === rationale,
+    );
+    if (match) return match;
+  }
+
+  return suggestions[0];
+}
+
 function isHighOptionalScore(value: Score0To10 | null | undefined): boolean {
   return typeof value === "number" && Number.isFinite(value) && value >= 6;
 }
@@ -191,7 +229,10 @@ export function createLocalInterventionPlan({
   const anxietyReductionSelected =
     anxietyReliefPreference === "yes" &&
     (anxietySelected || activationSource === "freeze" || activationSource === "both");
-  const [suggestion] = getLocalActionSuggestions(taskText, category);
+  const suggestion = selectActionForBottlenecks(
+    getLocalActionSuggestions(taskText, category),
+    bottlenecks,
+  );
 
   // getLocalActionSuggestions has a total category map and always returns three.
   if (!suggestion) {
