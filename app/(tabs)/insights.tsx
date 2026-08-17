@@ -72,23 +72,17 @@ export default function InsightsScreen() {
         比べる相手は過去の自分でもありません。役立ちそうな条件を静かに探すための記録です。
       </AppText>
 
-      <View style={styles.metrics}>
-        <Metric label="作った開始プラン" value={`${metrics.plannedCount}`} suffix="件" />
-        <Metric label="開始した回数" value={`${metrics.startedCount}`} suffix="回" />
-      </View>
-
-      <Card tone="green" style={styles.rateCard}>
-        <View style={styles.rateRow}>
-          <View style={styles.rateCopy}>
-            <AppText variant="caption" color={colors.inkMuted}>
-              開始率
-            </AppText>
-            <AppText variant="display">{metrics.startRate}%</AppText>
-          </View>
-          <AppText variant="caption" color={colors.inkMuted} style={styles.rateNote}>
-            計画した回数を分母にしています。高低を評価するための数字ではありません。
-          </AppText>
+      <Card tone="green" style={styles.startsCard}>
+        <AppText variant="caption" color={colors.inkMuted}>
+          これまでに開始した回数
+        </AppText>
+        <View style={styles.valueRow}>
+          <AppText variant="display">{metrics.startedCount}</AppText>
+          <AppText color={colors.inkMuted}>回</AppText>
         </View>
+        <AppText variant="caption" color={colors.inkMuted}>
+          増えるだけの数字です。割合や達成度としては表示しません。
+        </AppText>
       </Card>
 
       <Card tone="green" style={styles.weekCard}>
@@ -171,20 +165,6 @@ export default function InsightsScreen() {
   );
 }
 
-function Metric({ label, value, suffix }: { label: string; value: string; suffix: string }) {
-  return (
-    <Card style={styles.metricCard}>
-      <AppText variant="caption" color={colors.inkMuted}>
-        {label}
-      </AppText>
-      <View style={styles.valueRow}>
-        <AppText variant="display">{value}</AppText>
-        <AppText color={colors.inkMuted}>{suffix}</AppText>
-      </View>
-    </Card>
-  );
-}
-
 function EmptyCard({ text }: { text: string }) {
   return (
     <Card>
@@ -201,13 +181,8 @@ function formatAttempt(attempt: TaskAttempt) {
 const styles = StyleSheet.create({
   loading: { alignItems: 'center', justifyContent: 'center' },
   lead: { marginTop: spacing.sm, marginBottom: spacing.xl },
-  metrics: { flexDirection: 'row', gap: spacing.md },
-  metricCard: { flex: 1 },
   valueRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs },
-  rateCard: { marginTop: spacing.md },
-  rateRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xl },
-  rateCopy: { minWidth: 92 },
-  rateNote: { flex: 1 },
+  startsCard: { gap: spacing.xs },
   weekCard: { marginTop: spacing.md },
   sectionTitle: { marginTop: spacing.xxl, marginBottom: spacing.md },
   history: { gap: spacing.sm },
