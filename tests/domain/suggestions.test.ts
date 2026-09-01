@@ -5,6 +5,7 @@ import {
   createLocalInterventionPlan,
   getLocalActionSuggestions,
   inferTaskCategory,
+  selectActionForBottlenecks,
   type TaskCategory,
 } from "../../src/domain";
 
@@ -85,7 +86,7 @@ describe("createLocalInterventionPlan", () => {
     });
 
     expect(plan).toMatchObject({
-      firstAction: "目の前の物を1つだけ手に取る",
+      firstAction: "今していることを10秒だけ止め、片付けたい場所の方を向く",
       durationMinutes: 1,
       startCue: "この画面を閉じたら",
       activationRitual: null,
@@ -210,16 +211,91 @@ describe("first action responds to the assessment", () => {
     expect(plan.firstAction).toBe("今見ている画面をいったん閉じる");
   });
 
-  it("falls back to the first candidate when no rationale matches", () => {
-    const assessment = assessBottlenecks({
-      taskClarity: true,
-      aversion: 1,
-      lowActivation: 9,
+  it("keeps the explicit fallback when a supplied candidate set has no match", () => {
+    const firstCandidate = {
+      action: "目の前の物を1つだけ手に取る",
+      rationaleTag: "make_concrete" as const,
+    };
+
+    expect(selectActionForBottlenecks([firstCandidate], ["lowActivation"])).toBe(
+      firstCandidate,
+    );
+  });
+});
+
+describe("internal candidate coverage", () => {
+  it.each<{
+    category: TaskCategory;
+    task: string;
+    activationAction: string;
+    competitionAction: string;
+  }>([
+    {
+      category: "tidying",
+      task: "散らかった部屋を片付けたい",
+      activationAction: "身体を起こして、片付けたい場所の方を向く",
+      competitionAction: "今していることを10秒だけ止め、片付けたい場所の方を向く",
+    },
+    {
+      category: "email",
+      task: "仕事のメールに返信したい",
+      activationAction: "身体を起こして、返信する端末に手を置く",
+      competitionAction: "今していることを10秒だけ止め、返信するメールを1通だけ開く",
+    },
+    {
+      category: "paperwork",
+      task: "役所の申請手続きをする",
+      activationAction: "身体を起こして、書類か端末に手を置く",
+      competitionAction: "今していることを10秒だけ止め、書類か手続きの画面に手を伸ばす",
+    },
+    {
+      category: "bathing",
+      task: "お風呂に入りたい",
+      activationAction: "立って脱衣所の方を向く",
+      competitionAction: "今していることを10秒だけ止め、脱衣所の方を向く",
+    },
+    {
+      category: "studying",
+      task: "資格試験の勉強を始める",
+      activationAction: "身体を起こして、教材に手を置く",
+      competitionAction: "今していることを10秒だけ止め、教材を1つだけ開く",
+    },
+    {
+      category: "transition",
+      task: "ゲームをやめて別の活動に切り替える",
+      activationAction: "端末を伏せて立ち上がる",
+      competitionAction: "今見ている画面をいったん閉じる",
+    },
+    {
+      category: "other",
+      task: "観葉植物の植え替え",
+      activationAction: "「観葉植物の植え替え」をする場所へ一歩だけ近づく",
+      competitionAction:
+        "今していることを10秒だけ止め、「観葉植物の植え替え」の最初の画面か道具に触れる",
+    },
+  ])("$category responds to activation and competing-reward bottlenecks", ({
+    category,
+    task,
+    activationAction,
+    competitionAction,
+  }) => {
+    const activationPlan = createLocalInterventionPlan({
+      taskText: task,
+      category,
+      assessment: assessBottlenecks({ taskClarity: true, aversion: 1, lowActivation: 9 }),
+    });
+    const competitionPlan = createLocalInterventionPlan({
+      taskText: task,
+      category,
+      assessment: assessBottlenecks({
+        taskClarity: true,
+        aversion: 1,
+        lowActivation: 1,
+        competingReward: 9,
+      }),
     });
 
-    // tidying offers no activate_body candidate; behaviour must stay defined.
-    const plan = createLocalInterventionPlan({ taskText: tidying, assessment });
-    expect(plan.firstAction).toBe("目の前の物を1つだけ手に取る");
-    expect(plan.activationRitual).toBe("立って、水を一口飲む");
+    expect(activationPlan.firstAction).toBe(activationAction);
+    expect(competitionPlan.firstAction).toBe(competitionAction);
   });
 });
