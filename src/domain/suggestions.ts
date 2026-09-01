@@ -63,7 +63,9 @@ export function inferTaskCategory(taskText: string): TaskCategory {
   return match?.category ?? "other";
 }
 
-const FIXED_SUGGESTIONS: Readonly<
+const PUBLIC_SUGGESTION_COUNT = 3;
+
+const FIXED_ACTION_CANDIDATES: Readonly<
   Record<Exclude<TaskCategory, "other">, readonly ActionSuggestion[]>
 > = {
   tidying: [
@@ -73,6 +75,14 @@ const FIXED_SUGGESTIONS: Readonly<
       action: "片付けたい場所を指で1か所示す",
       rationaleTag: "make_concrete",
     },
+    {
+      action: "身体を起こして、片付けたい場所の方を向く",
+      rationaleTag: "activate_body",
+    },
+    {
+      action: "今していることを10秒だけ止め、片付けたい場所の方を向く",
+      rationaleTag: "interrupt_competition",
+    },
   ],
   email: [
     { action: "返信するメールを1通だけ開く", rationaleTag: "make_concrete" },
@@ -80,6 +90,14 @@ const FIXED_SUGGESTIONS: Readonly<
     {
       action: "本文の最初に「ご連絡ありがとうございます」と入力する",
       rationaleTag: "make_concrete",
+    },
+    {
+      action: "身体を起こして、返信する端末に手を置く",
+      rationaleTag: "activate_body",
+    },
+    {
+      action: "今していることを10秒だけ止め、返信するメールを1通だけ開く",
+      rationaleTag: "interrupt_competition",
     },
   ],
   paperwork: [
@@ -92,16 +110,36 @@ const FIXED_SUGGESTIONS: Readonly<
       action: "ペンか身分証を1つ手元に置く",
       rationaleTag: "reduce_friction",
     },
+    {
+      action: "身体を起こして、書類か端末に手を置く",
+      rationaleTag: "activate_body",
+    },
+    {
+      action: "今していることを10秒だけ止め、書類か手続きの画面に手を伸ばす",
+      rationaleTag: "interrupt_competition",
+    },
   ],
   bathing: [
     { action: "タオルを1枚だけ用意する", rationaleTag: "reduce_friction" },
     { action: "立って脱衣所の方を向く", rationaleTag: "activate_body" },
     { action: "お湯を出すボタンまで移動する", rationaleTag: "make_concrete" },
+    {
+      action: "今していることを10秒だけ止め、脱衣所の方を向く",
+      rationaleTag: "interrupt_competition",
+    },
   ],
   studying: [
     { action: "教材を1つだけ机に置く", rationaleTag: "reduce_friction" },
     { action: "始めるページを1ページだけ開く", rationaleTag: "make_concrete" },
     { action: "問題文の最初の1行だけ読む", rationaleTag: "make_concrete" },
+    {
+      action: "身体を起こして、教材に手を置く",
+      rationaleTag: "activate_body",
+    },
+    {
+      action: "今していることを10秒だけ止め、教材を1つだけ開く",
+      rationaleTag: "interrupt_competition",
+    },
   ],
   transition: [
     { action: "今見ている画面をいったん閉じる", rationaleTag: "interrupt_competition" },
@@ -122,13 +160,16 @@ function shortTaskLabel(taskText: string): string {
   return Array.from(normalized).slice(0, 40).join("");
 }
 
-/** Always returns three offline Japanese actions that can start within 30 seconds. */
-export function getLocalActionSuggestions(
+/**
+ * Builds the complete internal pool. Some candidates exist only so the plan can
+ * respond to a bottleneck without changing the public three-suggestion contract.
+ */
+function getLocalActionCandidates(
   taskText: string,
   category: TaskCategory = inferTaskCategory(taskText),
 ): ActionSuggestion[] {
   if (category !== "other") {
-    return FIXED_SUGGESTIONS[category].map((suggestion) => ({ ...suggestion }));
+    return FIXED_ACTION_CANDIDATES[category].map((suggestion) => ({ ...suggestion }));
   }
 
   const label = shortTaskLabel(taskText);
@@ -145,7 +186,19 @@ export function getLocalActionSuggestions(
       action: `「${label}」の最初の画面や道具を開く`,
       rationaleTag: "reduce_friction",
     },
+    {
+      action: `今していることを10秒だけ止め、「${label}」の最初の画面か道具に触れる`,
+      rationaleTag: "interrupt_competition",
+    },
   ];
+}
+
+/** Always returns three offline Japanese actions that can start within 30 seconds. */
+export function getLocalActionSuggestions(
+  taskText: string,
+  category: TaskCategory = inferTaskCategory(taskText),
+): ActionSuggestion[] {
+  return getLocalActionCandidates(taskText, category).slice(0, PUBLIC_SUGGESTION_COUNT);
 }
 
 export interface CreateLocalInterventionPlanInput {
@@ -230,11 +283,11 @@ export function createLocalInterventionPlan({
     anxietyReliefPreference === "yes" &&
     (anxietySelected || activationSource === "freeze" || activationSource === "both");
   const suggestion = selectActionForBottlenecks(
-    getLocalActionSuggestions(taskText, category),
+    getLocalActionCandidates(taskText, category),
     bottlenecks,
   );
 
-  // getLocalActionSuggestions has a total category map and always returns three.
+  // The internal candidate builder has a total category map and always returns candidates.
   if (!suggestion) {
     throw new Error("ローカル提案を作成できませんでした");
   }
