@@ -46,6 +46,7 @@
 
 - [製品の目的・役割・境界](docs/PRODUCT_SCOPE.md)
 - [臨床設計の正本・根拠台帳](docs/CLINICAL_DESIGN.md)
+- [倫理・安全・法務の境界仕様](docs/SAFETY_BOUNDARIES.md)
 - [Phase 0〜20の改定ロードマップと進捗](docs/ROADMAP.md)
 - [安全設計](docs/SAFETY.md)
 - [プライバシー](docs/PRIVACY.md)

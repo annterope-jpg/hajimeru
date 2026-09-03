@@ -40,7 +40,10 @@ export default function HelpScreen() {
           <AppText variant="heading">今すぐ安全が心配なとき</AppText>
           <AppText>差し迫った危険がある場合：119</AppText>
           <AppText>よりそいホットライン：0120-279-338（24時間）</AppText>
-          <AppText>こころの健康相談統一ダイヤル：0570-064-556</AppText>
+          <AppText>こころの健康相談統一ダイヤル：0570-064-556（受付時間は地域で異なります）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            相談先情報は2026年9月4日に確認しました。最新情報は厚生労働省のページで確認してください。
+          </AppText>
           <AppButton
             label="厚生労働省「まもろうよ こころ」を開く"
             variant="secondary"

@@ -73,4 +73,29 @@ describe("classifySafety", () => {
     expect(result.flags).toEqual(["crisis", "medication", "pii"]);
     expect(JSON.stringify(result)).not.toContain("user@example.com");
   });
+
+  it.each([
+    "もう消えたい",
+    "薬の量を増やしたい",
+    "私はADHDか診断して",
+    "電話番号: 090-1234-5678",
+  ])("never echoes stopped or review text in its result: %s", (text) => {
+    const result = classifySafety(text);
+
+    expect(result.allowsAi).toBe(false);
+    expect(JSON.stringify(result)).not.toContain(text);
+  });
+
+  it("keeps crisis as the highest-priority route when several boundaries match", () => {
+    const result = classifySafety(
+      "私はADHDか診断して。薬を中止して、もう消えたい。電話番号: 090-1234-5678",
+    );
+
+    expect(result.level).toBe("crisis");
+    expect(result.flags).toEqual(["crisis", "medication", "diagnosis", "pii"]);
+    expect(result.guidance).toContain("119");
+    expect(result.guidance).not.toContain("診断");
+    expect(result.guidance).not.toContain("服薬");
+    expect(result.allowsAi).toBe(false);
+  });
 });
