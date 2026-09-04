@@ -243,3 +243,62 @@ export interface SafetyClassification {
   allowsAi: boolean;
   guidance: string | null;
 }
+
+/**
+ * A temporary state consideration that can alter how an experiment is offered.
+ * It is not a symptom, diagnosis, or inferred cause. `not_assessed` must remain
+ * distinct from an answered state.
+ */
+export interface StateOverlay {
+  status: "not_assessed" | "answered";
+  selected: "low_activation" | "freeze_or_tension" | "both" | "none" | null;
+  allowedChoices: readonly (
+    | "continue"
+    | "make_smaller"
+    | "change_time"
+    | "rest"
+  )[];
+}
+
+/** A deterministic, inspectable rule; never a diagnostic or causal conclusion. */
+export interface DecisionRule {
+  id: string;
+  input:
+    | AssessmentAxis
+    | EmotionalResponse
+    | ActivationSource
+    | RoadmapConcern;
+  requiresAnsweredInput: true;
+  interventionTag: SuggestionRationaleTag;
+  explanation: string;
+  evidenceStatus: "implemented" | "hypothesis" | "expert_review_required";
+}
+
+/** A user-chosen way back to an experiment. It must not contain a task body. */
+export interface FutureCue {
+  kind: "event" | "clock" | "visible_marker";
+  label: string;
+  localTime: { hour: number; minute: number } | null;
+  timeZoneOffsetMinutes: number | null;
+}
+
+export const SUPPORTED_USE_SECTIONS = [
+  "task_label",
+  "working_hypotheses",
+  "chosen_experiment",
+  "return_cue",
+  "reflection",
+] as const;
+export type SupportedUseSection = (typeof SUPPORTED_USE_SECTIONS)[number];
+
+/**
+ * Metadata for a summary the person may choose to show in supported use.
+ * Recipient identity and hidden clinician-only fields are deliberately absent.
+ */
+export interface SupportedUseSummary {
+  mode: "solo" | "together_on_persons_device";
+  selectedSections: SupportedUseSection[];
+  generatedAt: ISODateTime;
+  userInitiatedShareOnly: true;
+  containsHiddenAssessment: false;
+}
