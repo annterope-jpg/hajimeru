@@ -114,6 +114,7 @@ export default function RootLayout() {
           <Stack.Screen name="help" options={{ title: 'このアプリについて' }} />
           <Stack.Screen name="sync" options={{ title: '任意の同期' }} />
           <Stack.Screen name="privacy" options={{ title: 'プライバシー' }} />
+          <Stack.Screen name="data-permissions" options={{ title: 'データと同意' }} />
           <Stack.Screen name="auth/callback" options={{ title: 'サインイン' }} />
         </Stack>
       </SafeAreaProvider>

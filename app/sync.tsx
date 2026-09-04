@@ -51,7 +51,7 @@ export default function SyncScreen() {
     }
   }
 
-  async function syncNow() {
+  async function performSync() {
     if (!client) return;
     setWorking(true);
     try {
@@ -70,6 +70,22 @@ export default function SyncScreen() {
     } finally {
       setWorking(false);
     }
+  }
+
+  async function requestSync() {
+    const current = (await getLocalRepository().getPreferences()) ?? createDefaultUserPreferences();
+    if (current.syncEnabled) {
+      await performSync();
+      return;
+    }
+    Alert.alert(
+      '同期する内容を確認',
+      'クラウドへ送るもの：タスク試行、デイリー記録、表示設定、削除マーカー。送らないもの：通知・AIへの同意を他の端末で自動的にONにする情報、セラピストへの共有。同期停止とクラウド記録の削除は別の操作です。',
+      [
+        { text: '今は同期しない', style: 'cancel' },
+        { text: '同意して同期', onPress: () => void performSync() },
+      ],
+    );
   }
 
   async function disableSyncPreference() {
@@ -184,7 +200,7 @@ export default function SyncScreen() {
           <Card tone="green">
             <AppText variant="heading">サインイン済み</AppText>
             <AppText color={colors.inkMuted}>同期はボタンを押した時だけ実行します。</AppText>
-            <AppButton label="今すぐ同期" loading={working} onPress={() => void syncNow()} />
+            <AppButton label="今すぐ同期" loading={working} onPress={() => void requestSync()} />
           </Card>
           <Card>
             <AppButton label="クラウドの記録を削除" variant="danger" onPress={confirmCloudDelete} />

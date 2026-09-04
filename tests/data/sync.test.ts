@@ -8,6 +8,7 @@ import {
   consolidateSyncRecords,
   reconcileDailyStateIdentities,
   readSupabaseConfig,
+  remotePreferencesToSyncRecord,
   syncRecordsEquivalent,
 } from '../../src/services/sync';
 
@@ -137,6 +138,29 @@ describe('remote record consolidation', () => {
     expect([...consolidateSyncRecords([active, deletion]).values()]).toEqual([
       deletion,
     ]);
+  });
+});
+
+describe('device-local consent', () => {
+  it('never activates optional capabilities from remote preference values', () => {
+    const record = remotePreferencesToSyncRecord({
+      id: 'user-1',
+      user_id: 'user-1',
+      notifications_enabled: true,
+      ai_consent: true,
+      sync_enabled: true,
+      accessibility: { largeText: true },
+      created_at: '2026-09-04T00:00:00.000Z',
+      updated_at: '2026-09-04T00:00:00.000Z',
+      deleted_at: null,
+    });
+
+    expect(record.payload).toMatchObject({
+      notificationsEnabled: false,
+      aiConsentGranted: false,
+      syncEnabled: false,
+      accessibility: { largeText: true },
+    });
   });
 });
 

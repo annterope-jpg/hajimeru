@@ -412,9 +412,11 @@ export function remotePreferencesToSyncRecord(
 ): SyncRecord {
   const accessibility = asRecord(row.accessibility);
   const payload: UserPreferences = {
-    notificationsEnabled: row.notifications_enabled,
-    aiConsentGranted: row.ai_consent,
-    syncEnabled: row.sync_enabled,
+    // Consent is device- and context-specific. Remote values must never switch
+    // an optional capability on for this device.
+    notificationsEnabled: false,
+    aiConsentGranted: false,
+    syncEnabled: false,
     accessibility: {
       reduceMotion: accessibility.reduceMotion === true,
       largeText: accessibility.largeText === true,
@@ -522,9 +524,10 @@ function localPreferencesToRemote(userId: string, record: SyncRecord) {
   return {
     id: userId,
     user_id: userId,
-    notifications_enabled: value.notificationsEnabled === true,
-    ai_consent: value.aiConsentGranted === true,
-    sync_enabled: value.syncEnabled === true,
+    // Keep legacy columns inert. A local toggle is not portable consent.
+    notifications_enabled: false,
+    ai_consent: false,
+    sync_enabled: false,
     accessibility: asRecord(value.accessibility),
     updated_at: record.updatedAt,
     deleted_at: null,

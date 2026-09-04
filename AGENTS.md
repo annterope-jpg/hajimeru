@@ -5,6 +5,7 @@
 1. `docs/PRODUCT_SCOPE.md` — 製品の目的、本人・セラピスト・アプリの役割と境界
 2. `docs/CLINICAL_DESIGN.md` — 臨床設計の単一の正本、根拠、禁止事項、既知の不一致
 3. `docs/SAFETY_BOUNDARIES.md` — 通常フローを止める条件、安全・倫理・法務・セラピスト責任の境界
+4. `docs/CONSENT_AND_DATA_PERMISSIONS.md` — 機能別同意、送信項目、保持、撤回、共有の境界
 
 特に次を守る。
 
