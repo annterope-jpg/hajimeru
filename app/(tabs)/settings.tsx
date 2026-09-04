@@ -71,6 +71,21 @@ export default function SettingsScreen() {
     await update({ notificationsEnabled: value });
   }
 
+  function toggleAiConsent(value: boolean) {
+    if (!value) {
+      void update({ aiConsentGranted: false });
+      return;
+    }
+    Alert.alert(
+      'AIへ送る内容を確認',
+      '送るもの：今回のタスク文、分類、選択済みボトルネック（最大2つ）。送らないもの：履歴、睡眠、気分、メールアドレス。Supabaseを経由してOpenAI APIで処理します。',
+      [
+        { text: '使わない', style: 'cancel' },
+        { text: '同意してONにする', onPress: () => void update({ aiConsentGranted: true }) },
+      ],
+    );
+  }
+
   function confirmClearLocal() {
     Alert.alert(
       '端末内の記録を削除しますか？',
@@ -118,7 +133,7 @@ export default function SettingsScreen() {
           title="AI提案への同意"
           description="タスク文・分類・最大2つのボトルネックだけを送る"
           value={preferences.aiConsentGranted}
-          onChange={(aiConsentGranted) => void update({ aiConsentGranted })}
+          onChange={toggleAiConsent}
         />
         <Divider />
         <NavigationRow
@@ -182,6 +197,12 @@ export default function SettingsScreen() {
         情報
       </AppText>
       <Card style={styles.group}>
+        <NavigationRow
+          title="データと同意を確認"
+          description="機能ごとに、扱うもの・渡る先・保持・やめ方を見る"
+          onPress={() => router.push('/data-permissions' as never)}
+        />
+        <Divider />
         <NavigationRow title="このアプリについて・相談先" onPress={() => router.push('/help')} />
         <Divider />
         <NavigationRow title="プライバシー" onPress={() => router.push('/privacy')} />
@@ -192,7 +213,7 @@ export default function SettingsScreen() {
         />
       </Card>
       <AppText variant="caption" color={colors.inkMuted} style={styles.version}>
-        はじめる 試作版 0.1.0
+        はじめの地図 試作版 0.1.0
       </AppText>
     </Screen>
   );

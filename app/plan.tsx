@@ -189,7 +189,7 @@ export default function PlanScreen() {
     };
   }, [activeAttemptId, activePlan, createAttempt, prepareAttempt, restoring, safety.level, taskText]);
 
-  async function toggleAi(value: boolean) {
+  async function saveAiConsent(value: boolean) {
     const next: UserPreferences = {
       ...preferences,
       aiConsentGranted: value,
@@ -197,6 +197,21 @@ export default function PlanScreen() {
     };
     setPreferences(next);
     await getLocalRepository().savePreferences(next);
+  }
+
+  async function toggleAi(value: boolean) {
+    if (value && !preferences.aiConsentGranted) {
+      Alert.alert(
+        'AIへ送る内容を確認',
+        '送るもの：今回のタスク文、分類、選択済みボトルネック（最大2つ）。送らないもの：履歴、睡眠、気分、メールアドレス。Supabaseを経由してOpenAI APIで処理します。',
+        [
+          { text: '使わない', style: 'cancel' },
+          { text: '同意してONにする', onPress: () => void saveAiConsent(true) },
+        ],
+      );
+      return;
+    }
+    await saveAiConsent(value);
   }
 
   async function askAi() {
