@@ -29,6 +29,16 @@ import { radii, spacing } from '@/theme/spacing';
 
 const fallbackPreferences = createDefaultUserPreferences();
 
+const FIRST_ACTION_REASONS: Record<ActionSuggestion['rationaleTag'], string> = {
+  make_concrete: '最初の身体動作をはっきりさせるため',
+  reduce_friction: '準備や手間を1つ減らすため',
+  bring_reward_closer: '始めた直後の変化を見えやすくするため',
+  externalize_cue: '頭の中だけで覚えず、戻る目印を作るため',
+  activate_body: '考える前に身体の状態を少し変えるため',
+  accept_discomfort: '嫌さが残っていても接近できる大きさにするため',
+  interrupt_competition: '今していることとの切り替えを作るため',
+};
+
 const BOTTLENECK_EXPLANATIONS: Record<keyof typeof BOTTLENECK_LABELS, string> = {
   taskClarity: '課題全体に判断が多く、最初の身体動作を選ぶ前に負荷が上がっています。',
   lowActivation: '眠さやぼんやり、身体の重さが、動き出すためのコストを上げています。',
@@ -330,6 +340,23 @@ export default function PlanScreen() {
       <AppText variant="title" style={styles.title}>
         最初の一歩は、これだけ
       </AppText>
+      {activePlan.stateOverlay?.status === 'answered' &&
+      activePlan.stateOverlay.selected !== 'none' ? (
+        <Card tone="amber" style={styles.stateCard}>
+          <AppText variant="label">今の状態を、課題とは別に扱います</AppText>
+          <AppText color={colors.inkMuted}>
+            {activePlan.stateOverlay.selected === 'freeze_or_tension'
+              ? '不安や緊張で固まる感じには、覚醒を上げるより先に緊張を少し下げる案を置きます。'
+              : activePlan.stateOverlay.selected === 'both'
+                ? 'ぼんやりと緊張が重なるときは、呼吸と身体の準備を短く行います。'
+                : '眠さや身体の重さが強いときは、複雑な計画より先に身体の準備を置きます。'}
+          </AppText>
+          {activePlan.activationRitual ? <AppText variant="heading">{activePlan.activationRitual}</AppText> : null}
+          <AppText variant="caption" color={colors.inkMuted}>
+            このまま試すほか、動作を小さくする・時間を変える・休む選択も失敗ではありません。
+          </AppText>
+        </Card>
+      ) : null}
       <Card tone="green" style={styles.actionCard}>
         <View style={styles.stepBadge}>
           <AppText variant="caption" color={colors.white}>
@@ -337,6 +364,11 @@ export default function PlanScreen() {
           </AppText>
         </View>
         <AppText variant="heading">{activePlan.firstAction}</AppText>
+        {activePlan.firstActionRationaleTag ? (
+          <AppText variant="caption" color={colors.primary}>
+            この一歩を選んだ理由：{FIRST_ACTION_REASONS[activePlan.firstActionRationaleTag]}
+          </AppText>
+        ) : null}
         <AppText color={colors.inkMuted}>{activePlan.supportiveMessage}</AppText>
       </Card>
 
@@ -385,7 +417,10 @@ export default function PlanScreen() {
 
       <View style={styles.planItems}>
         <PlanRow label="始めるきっかけ" value={activePlan.startCue} />
-        {activePlan.activationRitual ? <PlanRow label="起動の準備" value={activePlan.activationRitual} /> : null}
+        {activePlan.activationRitual &&
+        !(activePlan.stateOverlay?.status === 'answered' && activePlan.stateOverlay.selected !== 'none') ? (
+          <PlanRow label="起動の準備" value={activePlan.activationRitual} />
+        ) : null}
         {activePlan.distractionFriction ? (
           <PlanRow label="妨害を減らす" value={activePlan.distractionFriction} />
         ) : null}
@@ -495,7 +530,12 @@ export default function PlanScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`最初の行動にする：${suggestion.action}`}
                 onPress={() => {
-                  setPlan({ ...activePlan, firstAction: suggestion.action, source: 'ai' });
+                  setPlan({
+                    ...activePlan,
+                    firstAction: suggestion.action,
+                    firstActionRationaleTag: suggestion.rationaleTag,
+                    source: 'ai',
+                  });
                   if (activeRoadmap) {
                     setRoadmap({
                       ...activeRoadmap,
@@ -564,6 +604,7 @@ function SafetyRoute({ level, guidance }: { level: string; guidance: string | nu
 
 const styles = StyleSheet.create({
   title: { marginTop: spacing.xs, marginBottom: spacing.xl },
+  stateCard: { marginBottom: spacing.md },
   actionCard: { padding: spacing.xl, gap: spacing.md },
   stepBadge: {
     alignSelf: 'flex-start',

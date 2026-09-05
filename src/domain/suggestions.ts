@@ -7,7 +7,9 @@ import type {
   EmotionalResponse,
   InterventionPlan,
   Score0To10,
+  StateOverlay,
   TaskCategory,
+  TaskBottleneck,
   TimerMinutes,
 } from "./types";
 
@@ -121,6 +123,52 @@ function shortTaskLabel(taskText: string): string {
   return Array.from(normalized).slice(0, 40).join("");
 }
 
+const BOTTLENECK_RATIONALE: Readonly<
+  Record<TaskBottleneck, ActionSuggestion["rationaleTag"]>
+> = {
+  taskClarity: "make_concrete",
+  aversion: "accept_discomfort",
+  rewardDistance: "bring_reward_closer",
+  timeAmbiguity: "externalize_cue",
+  cueWeakness: "externalize_cue",
+  competingReward: "interrupt_competition",
+};
+
+function genericSuggestionForBottleneck(
+  taskText: string,
+  bottleneck: TaskBottleneck,
+): ActionSuggestion {
+  const label = shortTaskLabel(taskText);
+  const suggestions: Readonly<Record<TaskBottleneck, string>> = {
+    taskClarity: `「${label}」に使う物を1つだけ手に取る`,
+    aversion: `嫌さはそのままで、「${label}」に使う物へ手を伸ばす`,
+    rewardDistance: `「${label}」で、30秒後に変化が見える対象を1つ指で示す`,
+    timeAmbiguity: `「${label}」を始める合図を1つだけ決める`,
+    cueWeakness: `「${label}」に戻る目印を1つ、見える所へ置く`,
+    competingReward: "今している画面や道具から、いったん手を離す",
+  };
+  return {
+    action: suggestions[bottleneck],
+    rationaleTag: BOTTLENECK_RATIONALE[bottleneck],
+  };
+}
+
+/** Selects the visible first action from the highest-priority answered task hypothesis. */
+export function getFirstActionSuggestion(
+  taskText: string,
+  category: TaskCategory,
+  bottlenecks: readonly TaskBottleneck[],
+): ActionSuggestion {
+  const primary = bottlenecks[0];
+  const categorySuggestions = getLocalActionSuggestions(taskText, category);
+  if (!primary) return categorySuggestions[0]!;
+  const rationale = BOTTLENECK_RATIONALE[primary];
+  return (
+    categorySuggestions.find((suggestion) => suggestion.rationaleTag === rationale) ??
+    genericSuggestionForBottleneck(taskText, primary)
+  );
+}
+
 /** Always returns three offline Japanese actions that can start within 30 seconds. */
 export function getLocalActionSuggestions(
   taskText: string,
@@ -191,7 +239,23 @@ export function createLocalInterventionPlan({
   const anxietyReductionSelected =
     anxietyReliefPreference === "yes" &&
     (anxietySelected || activationSource === "freeze" || activationSource === "both");
-  const [suggestion] = getLocalActionSuggestions(taskText, category);
+  const suggestion = getFirstActionSuggestion(taskText, category, bottlenecks);
+  const stateOverlay: StateOverlay =
+    assessment.stateOverlay?.selected === "low_activation"
+      ? {
+          ...assessment.stateOverlay,
+          selected:
+            activationSource === "freeze"
+              ? "freeze_or_tension"
+              : activationSource === "both"
+                ? "both"
+                : "low_activation",
+        }
+      : (assessment.stateOverlay ?? {
+          status: "not_assessed",
+          selected: null,
+          allowedChoices: [],
+        });
 
   // getLocalActionSuggestions has a total category map and always returns three.
   if (!suggestion) {
@@ -206,12 +270,15 @@ export function createLocalInterventionPlan({
 
   return {
     firstAction: suggestion.action,
+    firstActionRationaleTag: suggestion.rationaleTag,
     durationMinutes,
     startCue,
-    activationRitual: includes(bottlenecks, "lowActivation")
-      ? activationSource === "freeze"
+    activationRitual:
+      stateOverlay.status === "answered" &&
+      stateOverlay.selected !== "none"
+      ? stateOverlay.selected === "freeze_or_tension"
         ? "肩を少し下げ、息を長く1回吐く"
-        : activationSource === "both"
+        : stateOverlay.selected === "both"
           ? "息を長く1回吐いてから、立って水を一口飲む"
           : "立って、水を一口飲む"
       : null,
@@ -239,6 +306,7 @@ export function createLocalInterventionPlan({
         : "嫌なままで大丈夫。30秒だけ始めます。"
       : "終わらせなくて大丈夫。最初の一歩だけです。",
     bottlenecks,
+    stateOverlay,
     source: "local",
     createdAt,
   };

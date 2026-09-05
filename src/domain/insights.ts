@@ -1,5 +1,5 @@
 import { BOTTLENECK_TIE_PRIORITY } from './assessment';
-import type { Bottleneck, DailyState, TaskAttempt } from './types';
+import type { Bottleneck, DailyState, TaskAttempt, TaskBottleneck } from './types';
 
 const DAY_MS = 24 * 60 * 60 * 1_000;
 export const LOW_ACTIVATION_MAX = 4;
@@ -110,10 +110,10 @@ function chooseTopIntervention(attempts: readonly TaskAttempt[]): {
   const ranked = [...counts.entries()].sort((left, right) => {
     const countDifference = right[1] - left[1];
     if (countDifference !== 0) return countDifference;
-    return (
-      BOTTLENECK_TIE_PRIORITY.indexOf(left[0]) -
-      BOTTLENECK_TIE_PRIORITY.indexOf(right[0])
-    );
+    const leftIndex = BOTTLENECK_TIE_PRIORITY.indexOf(left[0] as TaskBottleneck);
+    const rightIndex = BOTTLENECK_TIE_PRIORITY.indexOf(right[0] as TaskBottleneck);
+    return (leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex) -
+      (rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex);
   });
   const first = ranked[0];
   return first

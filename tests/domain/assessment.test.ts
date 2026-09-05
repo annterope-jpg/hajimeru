@@ -51,13 +51,14 @@ describe("assessBottlenecks", () => {
     });
 
     expect(numericTie.primaryBottlenecks).toEqual([
-      "lowActivation",
       "aversion",
+      "cueWeakness",
     ]);
     expect(clarityTie.primaryBottlenecks).toEqual([
       "taskClarity",
-      "lowActivation",
+      "aversion",
     ]);
+    expect(numericTie.stateOverlay?.selected).toBe("low_activation");
   });
 
   it("never returns more than two primary bottlenecks", () => {

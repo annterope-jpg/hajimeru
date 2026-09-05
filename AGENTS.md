@@ -1,12 +1,13 @@
 # 開発前に読む文書
 
-このリポジトリを変更する前に、次の2文書を必ず読むこと。
+このリポジトリを変更する前に、次の文書を必ず読むこと。
 
 1. `docs/PRODUCT_SCOPE.md` — 製品の目的、本人・セラピスト・アプリの役割と境界
 2. `docs/CLINICAL_DESIGN.md` — 臨床設計の単一の正本、根拠、禁止事項、既知の不一致
 3. `docs/SAFETY_BOUNDARIES.md` — 通常フローを止める条件、安全・倫理・法務・セラピスト責任の境界
 4. `docs/CONSENT_AND_DATA_PERMISSIONS.md` — 機能別同意、送信項目、保持、撤回、共有の境界
 5. `docs/DOMAIN_MODEL.md` — 純粋ドメイン型、未回答、ログ、fixture、互換性の回帰規則
+6. `docs/FIRST_ACTION_RULES.md` — 回答、課題側仮説、現在状態、最初の行動の対応規則
 
 特に次を守る。
 
