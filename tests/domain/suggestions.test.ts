@@ -71,6 +71,46 @@ describe("local Japanese task inference and suggestions", () => {
 });
 
 describe("createLocalInterventionPlan", () => {
+  it.each([
+    ["taskClarity", { taskClarity: false }, "make_concrete"],
+    ["aversion", { aversion: 9 }, "accept_discomfort"],
+    ["rewardDistance", { rewardDistance: 9 }, "bring_reward_closer"],
+    ["timeAmbiguity", { timeAmbiguity: 9 }, "externalize_cue"],
+    ["cueWeakness", { cueWeakness: 9 }, "externalize_cue"],
+    ["competingReward", { competingReward: 9 }, "interrupt_competition"],
+  ] as const)(
+    "uses the answered %s hypothesis to select the visible first action",
+    (_axis, answers, expectedTag) => {
+      const plan = createLocalInterventionPlan({
+        taskText: "部屋を片付ける",
+        assessment: assessBottlenecks(answers),
+      });
+
+      expect(plan.firstActionRationaleTag).toBe(expectedTag);
+      expect(plan.firstAction).not.toBe("");
+    },
+  );
+
+  it("keeps high low activation outside the two task hypotheses", () => {
+    const assessment = assessBottlenecks({
+      lowActivation: 10,
+      taskClarity: false,
+      aversion: 9,
+      cueWeakness: 8,
+    });
+    const plan = createLocalInterventionPlan({
+      taskText: "部屋を片付ける",
+      assessment,
+      activationSource: "freeze",
+    });
+
+    expect(assessment.primaryBottlenecks).toEqual(["taskClarity", "aversion"]);
+    expect(plan.bottlenecks).toEqual(["taskClarity", "aversion"]);
+    expect(plan.stateOverlay?.selected).toBe("freeze_or_tension");
+    expect(plan.activationRitual).toContain("息を長く1回");
+    expect(plan.firstActionRationaleTag).toBe("make_concrete");
+  });
+
   it("maps the selected bottlenecks to an offline start plan", () => {
     const assessment = assessBottlenecks({
       rewardDistance: 9,
@@ -85,7 +125,8 @@ describe("createLocalInterventionPlan", () => {
     });
 
     expect(plan).toMatchObject({
-      firstAction: "目の前の物を1つだけ手に取る",
+      firstAction: "「部屋を片付ける」で、30秒後に変化が見える対象を1つ指で示す",
+      firstActionRationaleTag: "bring_reward_closer",
       durationMinutes: 1,
       startCue: "この画面を閉じたら",
       activationRitual: null,
@@ -96,6 +137,11 @@ describe("createLocalInterventionPlan", () => {
       reassuranceAction: null,
       emotionSupport: null,
       bottlenecks: ["rewardDistance", "competingReward"],
+      stateOverlay: {
+        status: "not_assessed",
+        selected: null,
+        allowedChoices: [],
+      },
       source: "local",
       createdAt: "2026-08-13T12:00:00.000Z",
     });

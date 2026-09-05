@@ -11,6 +11,7 @@ import type {
   Bottleneck,
   DailyState,
   TaskAttempt,
+  TaskBottleneck,
 } from '../../src/domain/types';
 
 interface AttemptInput {
@@ -54,7 +55,9 @@ function makeAttempt({
         'competingReward',
       ],
       axisScores: [],
-      primaryBottlenecks: [...bottlenecks],
+      primaryBottlenecks: bottlenecks.filter(
+        (item): item is TaskBottleneck => item !== 'lowActivation',
+      ),
     },
     plan: {
       firstAction: '目の前の物を1つ手に取る',

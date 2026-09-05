@@ -4,28 +4,28 @@ import {
   type AssessmentAnswers,
   type AssessmentAxis,
   type Bottleneck,
+  type TaskBottleneck,
   type BottleneckScore,
   type Score0To10,
 } from "./types";
 
 export const BOTTLENECK_THRESHOLD = 6;
 export const MAX_PRIMARY_BOTTLENECKS = 2;
+export const TASK_BOTTLENECK_AXES = ASSESSMENT_AXES.filter(
+  (axis): axis is TaskBottleneck => axis !== "lowActivation",
+);
 
-/**
- * Product-specified tie order. Time ambiguity is appended as a deterministic
- * final fallback because the product order names the other six axes only.
- */
+/** Deterministic tie order for the six task-side hypotheses. */
 export const BOTTLENECK_TIE_PRIORITY = [
   "taskClarity",
-  "lowActivation",
   "aversion",
   "cueWeakness",
   "competingReward",
   "rewardDistance",
   "timeAmbiguity",
-] as const satisfies readonly Bottleneck[];
+] as const satisfies readonly TaskBottleneck[];
 
-const PRIORITY_INDEX = new Map<Bottleneck, number>(
+const PRIORITY_INDEX = new Map<TaskBottleneck, number>(
   BOTTLENECK_TIE_PRIORITY.map((axis, index) => [axis, index] as const),
 );
 
@@ -128,7 +128,10 @@ export function assessBottlenecks(
   );
 
   const primaryBottlenecks = axisScores
-    .filter(({ thresholdMet }) => thresholdMet)
+    .filter(
+      (score): score is BottleneckScore & { bottleneck: TaskBottleneck } =>
+        score.thresholdMet && score.bottleneck !== "lowActivation",
+    )
     .sort((left, right) => {
       const scoreDifference = right.score - left.score;
       if (scoreDifference !== 0) {
@@ -148,5 +151,19 @@ export function assessBottlenecks(
     unansweredAxes,
     axisScores,
     primaryBottlenecks,
+    stateOverlay:
+      answers.lowActivation === null
+        ? { status: "not_assessed", selected: null, allowedChoices: [] }
+        : answers.lowActivation >= BOTTLENECK_THRESHOLD
+          ? {
+              status: "answered",
+              selected: "low_activation",
+              allowedChoices: ["continue", "make_smaller", "change_time", "rest"],
+            }
+          : {
+              status: "answered",
+              selected: "none",
+              allowedChoices: ["continue"],
+            },
   };
 }

@@ -23,6 +23,7 @@ export const ASSESSMENT_AXES = [
 
 export type AssessmentAxis = (typeof ASSESSMENT_AXES)[number];
 export type Bottleneck = AssessmentAxis;
+export type TaskBottleneck = Exclude<AssessmentAxis, "lowActivation">;
 
 export interface AssessmentAnswers {
   /** true when the first physical action is already clear */
@@ -47,8 +48,10 @@ export interface Assessment {
   unansweredAxes: AssessmentAxis[];
   /** Scores for answered axes only. Unanswered axes never appear here. */
   axisScores: BottleneckScore[];
-  /** Ordered by score and deterministic tie priority; never more than two. */
-  primaryBottlenecks: Bottleneck[];
+  /** Task-side hypotheses ordered by score and tie priority; never more than two. */
+  primaryBottlenecks: TaskBottleneck[];
+  /** Present on new assessments; absent on records created before Phase 5. */
+  stateOverlay?: StateOverlay;
 }
 
 /** Daily ratings are state-oriented: a higher value means more of the label. */
@@ -95,6 +98,8 @@ export interface ActionSuggestion {
 
 export interface InterventionPlan {
   firstAction: string;
+  /** Why this first action was selected; absent on records before Phase 5. */
+  firstActionRationaleTag?: SuggestionRationaleTag;
   durationMinutes: TimerMinutes;
   startCue: string;
   activationRitual: string | null;
@@ -109,7 +114,10 @@ export interface InterventionPlan {
   /** Optional support chosen from the person's description of anxiety or freezing. */
   emotionSupport: string | null;
   supportiveMessage: string;
+  /** New plans contain task hypotheses only; legacy records may include lowActivation. */
   bottlenecks: Bottleneck[];
+  /** State support is not counted toward the maximum two task hypotheses. */
+  stateOverlay?: StateOverlay;
   source: "local" | "ai";
   createdAt: ISODateTime;
 }
