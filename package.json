@@ -10,6 +10,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:domain": "vitest run tests/domain tests/data/domain-contract.test.ts tests/source-boundaries.test.js",
     "test:watch": "vitest",
     "lint": "eslint .",
     "export:web": "expo export --platform web"
