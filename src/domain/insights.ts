@@ -38,6 +38,16 @@ export interface InsightMetricOptions {
   timeZone?: string;
 }
 
+/**
+ * Person-facing insights deliberately omit plan/start totals, rates, streaks,
+ * and recent-frequency comparisons. Those analysis metrics remain available
+ * separately for consented product evaluation.
+ */
+export interface PersonalInsightSummary {
+  topIntervention: Bottleneck | null;
+  hasActivationPattern: boolean;
+}
+
 function percentage(numerator: number, denominator: number): number {
   return denominator > 0 ? Math.round((numerator / denominator) * 100) : 0;
 }
@@ -192,6 +202,28 @@ export function calculateInsightMetrics(
     joinedStateAttemptCount: activation.joined,
     activationTrend: activation.trend,
   };
+}
+
+export function createPersonalInsightSummary(
+  summary: InsightsSummaryInput,
+  options: Pick<InsightMetricOptions, 'timeZone'> = {},
+): PersonalInsightSummary {
+  const top = chooseTopIntervention(summary.attempts);
+  const activation = calculateActivationTrend(summary, options.timeZone);
+  return {
+    topIntervention: top.intervention,
+    hasActivationPattern:
+      activation.trend !== null &&
+      activation.trend.lowActivation.started > 0 &&
+      activation.trend.higherActivation.started > 0,
+  };
+}
+
+export function formatPersonalActivationPattern(): string {
+  return (
+    '動けそうな感覚が低めの日と、それ以外の日の両方に開始の記録があります。' +
+    'どちらが良い・悪いという比較ではなく、時間帯や最初の動作を相談するときの手がかりです。'
+  );
 }
 
 export function formatActivationTrend(trend: ActivationStartTrend): string {

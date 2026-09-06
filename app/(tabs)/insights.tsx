@@ -1,14 +1,14 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { getLocalRepository } from '@/data';
 import {
-  calculateInsightMetrics,
-  formatActivationTrend,
+  createPersonalInsightSummary,
+  formatPersonalActivationPattern,
   type Bottleneck,
   type DailyState,
   type TaskAttempt,
@@ -32,7 +32,7 @@ const INTERVENTION_LABELS: Readonly<Record<Bottleneck, string>> = {
 };
 
 export default function InsightsScreen() {
-  const [summary, setSummary] = useState<Summary>();
+  const [summary, setSummary] = useState<Summary>({ attempts: [], dailyStates: [] });
 
   useFocusEffect(
     useCallback(() => {
@@ -49,99 +49,55 @@ export default function InsightsScreen() {
     }, []),
   );
 
-  const metrics = useMemo(
+  const personalInsights = useMemo(
     () =>
-      calculateInsightMetrics(
-        summary ?? { attempts: [], dailyStates: [] },
+      createPersonalInsightSummary(
+        summary,
       ),
     [summary],
   );
 
-  if (!summary) {
-    return (
-      <Screen scroll={false} contentStyle={styles.loading}>
-        <ActivityIndicator color={colors.primary} />
-      </Screen>
-    );
-  }
-
   return (
     <Screen testID="insights-screen">
-      <AppText variant="title">計画と開始の記録</AppText>
+      <AppText variant="title">試した条件のメモ</AppText>
       <AppText color={colors.inkMuted} style={styles.lead}>
-        比べる相手は過去の自分でもありません。役立ちそうな条件を静かに探すための記録です。
+        始めた一歩も、あとで見返すために残した一歩も、今の条件を知る手がかりです。回数や連続日数で評価しません。
       </AppText>
-
-      <View style={styles.metrics}>
-        <Metric label="作った開始プラン" value={`${metrics.plannedCount}`} suffix="件" />
-        <Metric label="開始した回数" value={`${metrics.startedCount}`} suffix="回" />
-      </View>
-
-      <Card tone="green" style={styles.rateCard}>
-        <View style={styles.rateRow}>
-          <View style={styles.rateCopy}>
-            <AppText variant="caption" color={colors.inkMuted}>
-              開始率
-            </AppText>
-            <AppText variant="display">{metrics.startRate}%</AppText>
-          </View>
-          <AppText variant="caption" color={colors.inkMuted} style={styles.rateNote}>
-            計画した回数を分母にしています。高低を評価するための数字ではありません。
-          </AppText>
-        </View>
-      </Card>
-
-      <Card tone="green" style={styles.weekCard}>
-        <AppText variant="caption" color={colors.inkMuted}>
-          直近7日
-        </AppText>
-        <AppText variant="heading">{metrics.weekStarts}回、最初の一歩を開始</AppText>
-        <AppText variant="caption" color={colors.inkMuted}>
-          多さを評価する表示ではありません。0回の週があっても記録はそのままです。
-        </AppText>
-      </Card>
 
       <AppText variant="heading" style={styles.sectionTitle}>
-        役立ったかもしれない工夫
+        一歩のあとに残った手がかり
       </AppText>
-      {metrics.topIntervention ? (
+      {personalInsights.topIntervention ? (
         <Card>
-          <AppText variant="label">負担が軽かった記録に残る工夫</AppText>
+          <AppText variant="label">ふりかえりと一緒に残っていた工夫</AppText>
           <AppText variant="heading" color={colors.primary}>
-            {INTERVENTION_LABELS[metrics.topIntervention]}
+            {INTERVENTION_LABELS[personalInsights.topIntervention]}
           </AppText>
           <AppText variant="caption" color={colors.inkMuted}>
-            「ここで終了（成功）」「もう少し続ける」、または開始後のイヤさが下がった
-            {metrics.topInterventionEvidenceCount}件の記録を手がかりにしています。効果や原因を示すものではありません。
+            開始後に区切りをつけた、もう少し続けた、またはイヤさの数値が下がった場面に一緒に残っていた条件です。この工夫の効果や、動けた原因を示すものではありません。
           </AppText>
         </Card>
       ) : (
-        <EmptyCard text="ふりかえりが集まると、負担が軽かった記録で使った工夫をここに表示します。" />
+        <EmptyCard text="開始後にふりかえりを残したときは、その場面に一緒にあった工夫をここで見返せます。残さなくても大丈夫です。" />
       )}
 
       <AppText variant="heading" style={styles.sectionTitle}>
-        状態との傾向
+        状態と一歩の記録
       </AppText>
-      {metrics.activationTrend ? (
+      {personalInsights.hasActivationPattern ? (
         <Card tone="blue">
-          <AppText variant="label">まだ小さなサンプルです</AppText>
-          <AppText>{formatActivationTrend(metrics.activationTrend)}</AppText>
+          <AppText variant="label">記録の並び方から見えること</AppText>
+          <AppText>{formatPersonalActivationPattern()}</AppText>
           <AppText variant="caption" color={colors.inkMuted}>
             これは記録上の相関にすぎず、睡眠・気分・覚醒が原因だとは判断しません。
           </AppText>
         </Card>
       ) : (
-        <EmptyCard
-          text={
-            metrics.joinedStateAttemptCount < 5
-              ? `開始プランと同じ日の状態記録が5組以上になると傾向を表示します（現在${metrics.joinedStateAttemptCount}組）。`
-              : '同じ日の記録は5組以上あります。動けそうな感覚が低めの日と、それ以外の日の両方が集まると比べられます。'
-          }
-        />
+        <EmptyCard text="状態と開始プランを同じ日に記録した場面がいくつか集まると、時間帯や動作の大きさを考える手がかりを表示します。記録を増やす必要はありません。" />
       )}
 
       <AppText variant="heading" style={styles.sectionTitle}>
-        最近の計画と開始
+        最近残した一歩
       </AppText>
       <View style={styles.history}>
         {summary.attempts.slice(0, 8).map((attempt) => {
@@ -149,39 +105,27 @@ export default function InsightsScreen() {
           return (
             <Card key={attempt.id} style={styles.historyCard}>
               <View style={styles.historyRow}>
-                <View style={[styles.historyDot, !started && styles.historyDotPlanned]} />
                 <View style={styles.historyCopy}>
                   <AppText variant="label" numberOfLines={2}>
                     {attempt.taskText}
                   </AppText>
                   <AppText variant="caption" color={colors.inkMuted}>
-                    {formatAttempt(attempt)} · {attempt.plan.durationMinutes}分
+                    {formatAttempt(attempt)} · {attempt.plan.durationMinutes}分だけ試す案
+                  </AppText>
+                  <AppText variant="caption" color={colors.inkMuted} numberOfLines={2}>
+                    最初の一歩：{attempt.plan.firstAction}
                   </AppText>
                 </View>
-                <AppText variant="caption" color={started ? colors.primary : colors.inkMuted}>
-                  {started ? '開始' : '計画'}
+                <AppText variant="caption" color={colors.primary}>
+                  {started ? '試した一歩' : '残してある一歩'}
                 </AppText>
               </View>
             </Card>
           );
         })}
-        {!summary.attempts.length ? <EmptyCard text="まだ計画はありません。「今、始める」から最初の一歩を作れます。" /> : null}
+        {!summary.attempts.length ? <EmptyCard text="ここには、作った一歩を必要なときだけ残せます。記録がなくても問題ありません。" /> : null}
       </View>
     </Screen>
-  );
-}
-
-function Metric({ label, value, suffix }: { label: string; value: string; suffix: string }) {
-  return (
-    <Card style={styles.metricCard}>
-      <AppText variant="caption" color={colors.inkMuted}>
-        {label}
-      </AppText>
-      <View style={styles.valueRow}>
-        <AppText variant="display">{value}</AppText>
-        <AppText color={colors.inkMuted}>{suffix}</AppText>
-      </View>
-    </Card>
   );
 }
 
@@ -194,26 +138,15 @@ function EmptyCard({ text }: { text: string }) {
 }
 
 function formatAttempt(attempt: TaskAttempt) {
-  const date = new Date(attempt.startedAt ?? attempt.createdAt);
+  const date = new Date(attempt.createdAt);
   return new Intl.DateTimeFormat('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date);
 }
 
 const styles = StyleSheet.create({
-  loading: { alignItems: 'center', justifyContent: 'center' },
   lead: { marginTop: spacing.sm, marginBottom: spacing.xl },
-  metrics: { flexDirection: 'row', gap: spacing.md },
-  metricCard: { flex: 1 },
-  valueRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.xs },
-  rateCard: { marginTop: spacing.md },
-  rateRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xl },
-  rateCopy: { minWidth: 92 },
-  rateNote: { flex: 1 },
-  weekCard: { marginTop: spacing.md },
   sectionTitle: { marginTop: spacing.xxl, marginBottom: spacing.md },
   history: { gap: spacing.sm },
   historyCard: { padding: spacing.md, borderRadius: radii.md },
   historyRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  historyDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.primary },
-  historyDotPlanned: { backgroundColor: colors.inkMuted },
   historyCopy: { flex: 1, gap: 2 },
 });
