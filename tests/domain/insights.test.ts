@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   calculateInsightMetrics,
+  createPersonalInsightSummary,
   formatActivationTrend,
+  formatPersonalActivationPattern,
   hasHelpfulReflection,
   localDateKeyForInstant,
 } from '../../src/domain/insights';
@@ -261,5 +263,52 @@ describe('calculateInsightMetrics', () => {
 
     expect(metrics.joinedStateAttemptCount).toBe(5);
     expect(metrics.activationTrend).toBeNull();
+  });
+});
+
+describe('person-facing insight boundary', () => {
+  it('does not expose plan/start counts or rates in the person-facing summary', () => {
+    const attempts = [
+      makeAttempt({ id: 'started', startedAt: '2026-08-13T04:00:00.000Z', outcome: 'continued' }),
+      makeAttempt({ id: 'saved-only' }),
+    ];
+
+    const personal = createPersonalInsightSummary({ attempts, dailyStates: [] });
+
+    expect(personal).toEqual({
+      topIntervention: 'taskClarity',
+      hasActivationPattern: false,
+    });
+    expect(personal).not.toHaveProperty('plannedCount');
+    expect(personal).not.toHaveProperty('startedCount');
+    expect(personal).not.toHaveProperty('startRate');
+    expect(personal).not.toHaveProperty('weekStarts');
+  });
+
+  it('formats an available state pattern without counts, rates, or causal claims', () => {
+    const text = formatPersonalActivationPattern();
+
+    expect(text).not.toMatch(/\d+件|%|開始率/);
+    expect(text).toContain('どちらが良い・悪いという比較ではなく');
+    expect(text).not.toContain('原因');
+  });
+
+  it('does not tell the person both state groups have starts when one group has none', () => {
+    const attempts = Array.from({ length: 5 }, (_, index) =>
+      makeAttempt({
+        id: `pattern-${index}`,
+        createdAt: index < 3 ? '2026-08-13T03:00:00.000Z' : '2026-08-14T03:00:00.000Z',
+        startedAt: index >= 3 ? '2026-08-14T03:05:00.000Z' : null,
+      }),
+    );
+    const personal = createPersonalInsightSummary(
+      {
+        attempts,
+        dailyStates: [makeState('2026-08-13', 3), makeState('2026-08-14', 7)],
+      },
+      { timeZone: 'UTC' },
+    );
+
+    expect(personal.hasActivationPattern).toBe(false);
   });
 });

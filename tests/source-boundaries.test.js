@@ -28,4 +28,14 @@ describe('source boundary regressions', () => {
       .filter((path) => /console\.(?:log|info|debug|warn|error)\s*\(/u.test(readFileSync(path, 'utf8')));
     expect(offenders).toEqual([]);
   });
+
+  it('keeps analysis-only performance metrics out of the person-facing insights screen', () => {
+    const insightsPath = join(process.cwd(), 'app', '(tabs)', 'insights.tsx');
+    const source = readFileSync(insightsPath, 'utf8');
+
+    expect(source).not.toMatch(/calculateInsightMetrics|plannedCount|startedCount|startRate|weekStarts/u);
+    expect(source).not.toMatch(/開始率|作った開始プラン|開始した回数|直近7日/u);
+    expect(source).toContain('残してある一歩');
+    expect(source).toContain('記録がなくても問題ありません');
+  });
 });

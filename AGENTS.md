@@ -8,6 +8,7 @@
 4. `docs/CONSENT_AND_DATA_PERMISSIONS.md` — 機能別同意、送信項目、保持、撤回、共有の境界
 5. `docs/DOMAIN_MODEL.md` — 純粋ドメイン型、未回答、ログ、fixture、互換性の回帰規則
 6. `docs/FIRST_ACTION_RULES.md` — 回答、課題側仮説、現在状態、最初の行動の対応規則
+7. `docs/NON_EVALUATIVE_INSIGHTS.md` — 本人向け記録と内部評価指標を分ける非評価的表示規則
 
 特に次を守る。
 
