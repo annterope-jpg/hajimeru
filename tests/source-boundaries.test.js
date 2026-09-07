@@ -38,4 +38,19 @@ describe('source boundary regressions', () => {
     expect(source).toContain('残してある一歩');
     expect(source).toContain('記録がなくても問題ありません');
   });
+
+  it('keeps shared-decision choices visible and does not persist hypothesis fit', () => {
+    const onboarding = readFileSync(join(process.cwd(), 'app', 'onboarding.tsx'), 'utf8');
+    const plan = readFileSync(join(process.cwd(), 'app', 'plan.tsx'), 'utf8');
+    const choices = readFileSync(join(process.cwd(), 'src', 'domain', 'sharedDecision.ts'), 'utf8');
+    const store = readFileSync(join(process.cwd(), 'src', 'state', 'useAppStore.ts'), 'utf8');
+
+    expect(onboarding).toContain('原因や診断を決めない');
+    expect(onboarding).toContain('見送る・休む・共有しない');
+    expect(choices).toContain('近い');
+    expect(choices).toContain('違う');
+    expect(choices).toContain('まだ分からない');
+    expect(plan).toContain('正解を選ぶ質問ではありません');
+    expect(store).not.toMatch(/hypothesisFit/u);
+  });
 });

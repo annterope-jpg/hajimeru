@@ -16,7 +16,10 @@ import {
   createDefaultUserPreferences,
   createLocalInterventionPlan,
   inferTaskCategory,
+  getHypothesisFitGuidance,
+  HYPOTHESIS_FIT_OPTIONS,
   type ActionSuggestion,
+  type HypothesisFit,
   type InterventionPlan,
   type TaskAttempt,
   type UserPreferences,
@@ -81,6 +84,11 @@ export default function PlanScreen() {
   const [cueHour, setCueHour] = useState('19');
   const [cueMinute, setCueMinute] = useState('00');
   const [cueSaving, setCueSaving] = useState(false);
+  const [hypothesisFit, setHypothesisFit] = useState<HypothesisFit>();
+
+  const hypothesisGuidance = hypothesisFit
+    ? getHypothesisFitGuidance(hypothesisFit)
+    : undefined;
 
   useEffect(() => {
     const id = Array.isArray(linkedAttemptId) ? linkedAttemptId[0] : linkedAttemptId;
@@ -327,7 +335,7 @@ export default function PlanScreen() {
       footer={
         <AppButton
           testID="plan-start"
-          label="開始できた"
+          label={hypothesisGuidance?.startLabel ?? 'この一歩を試す'}
           icon="play"
           loading={beginning}
           onPress={() => void begin()}
@@ -389,6 +397,53 @@ export default function PlanScreen() {
                 </AppText>
               </View>
             ))}
+          </View>
+          <View style={styles.fitSection}>
+            <AppText variant="label">この仮説は、今の感覚に近いですか？</AppText>
+            <AppText variant="caption" color={colors.inkMuted}>
+              正解を選ぶ質問ではありません。選ばずに進むこともできます。
+            </AppText>
+            <View accessibilityRole="radiogroup" style={styles.fitOptions}>
+              {HYPOTHESIS_FIT_OPTIONS.map((option) => {
+                const selected = hypothesisFit === option.value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    accessibilityRole="radio"
+                    accessibilityLabel={`仮説への返答：${option.label}`}
+                    accessibilityState={{ selected }}
+                    onPress={() => setHypothesisFit(option.value)}
+                    style={[styles.fitOption, selected && styles.fitOptionSelected]}
+                  >
+                    <AppText variant="label" color={selected ? colors.white : colors.ink}>
+                      {option.label}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {hypothesisGuidance ? (
+              <View accessibilityLiveRegion="polite" style={styles.fitGuidance}>
+                <AppText variant="label">{hypothesisGuidance.heading}</AppText>
+                <AppText variant="caption" color={colors.inkMuted}>{hypothesisGuidance.message}</AppText>
+                {hypothesisFit === 'different' ? (
+                  <View style={styles.fitActions}>
+                    <AppButton
+                      label="回答を見直す"
+                      variant="secondary"
+                      compact
+                      onPress={() => router.replace('/assessment')}
+                    />
+                    <AppButton
+                      label="今日はここで閉じる"
+                      variant="quiet"
+                      compact
+                      onPress={() => router.replace('/(tabs)')}
+                    />
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         </Card>
       ) : null}
@@ -616,6 +671,24 @@ const styles = StyleSheet.create({
   hypothesisCard: { marginTop: spacing.xl, padding: spacing.xl },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   hypothesisRow: { width: '100%', gap: 2, paddingTop: spacing.sm },
+  fitSection: { marginTop: spacing.lg, paddingTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.line, gap: spacing.sm },
+  fitOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  fitOption: {
+    minHeight: 48,
+    minWidth: 84,
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: radii.md,
+    backgroundColor: colors.surface,
+  },
+  fitOptionSelected: { backgroundColor: colors.primary },
+  fitGuidance: { gap: spacing.xs, padding: spacing.md, borderRadius: radii.md, backgroundColor: colors.surface },
+  fitActions: { marginTop: spacing.sm, gap: spacing.xs },
   roadmapCard: { marginTop: spacing.lg },
   roadmapHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   roadmapIcon: {
