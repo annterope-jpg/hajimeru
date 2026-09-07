@@ -7,6 +7,10 @@ tags:
 - launchApp:
     clearState: true
 
+- assertVisible: "同じ「動けない」でも、支え方は同じとは限りません"
+- tapOn:
+    id: "onboarding-next"
+- assertVisible: "このアプリの3つの約束"
 - assertVisible: "18歳以上です"
 - tapOn:
     id: "age-confirm-checkbox"
@@ -40,6 +44,8 @@ tags:
 
 - assertVisible: "開始プラン"
 - assertVisible: "最初の一歩は、これだけ"
+- assertVisible: "この仮説は、今の感覚に近いですか？"
+- tapOn: "まだ分からない"
 - tapOn:
     id: "plan-start"
 

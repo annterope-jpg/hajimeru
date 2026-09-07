@@ -20,7 +20,7 @@ const protocol = [
   ['1', '詰まりを見つける', '7つの要因から、今の場面で強いものを最大2つだけ選びます。'],
   ['2', '開始コストを下げる', '30秒以内の身体動作、外部の合図、環境調整へ変えます。'],
   ['3', '1・3・5分だけ試す', '嫌な感じが残っていてもよく、開始した時点を成功にします。'],
-  ['4', '予想と実際を比べる', '完了率ではなく、何が開始を助けたかを次の仮説にします。'],
+  ['4', '仮説の合い方を確かめる', '「近い・違う・まだ分からない」を手がかりに、次の一歩を直せます。'],
 ] as const;
 
 export default function LearnScreen() {
@@ -43,6 +43,13 @@ export default function LearnScreen() {
         <AppText variant="label">イヤさと身体の重さも、種類で支え方が変わります</AppText>
         <AppText variant="caption" color={colors.inkMuted}>
           不安を少し下げると動きやすい場面では、分からなさを1つに絞って確認できる一歩へ。眠気や疲れには身体を起こす準備、不安で固まる反応には緊張を少し下げる準備を提案します。どれにも当てはまらない場合は、嫌な感じが残ったまま30秒だけ始める方法を使えます。
+        </AppText>
+      </Card>
+
+      <Card style={styles.noteCard}>
+        <AppText variant="label">提案は、本人と確かめる仮説です</AppText>
+        <AppText variant="caption" color={colors.inkMuted}>
+          アプリが原因や正解を決めるのではありません。同じ止まり方でも、判断の多さ、不快感、身体状態などで支え方は変わります。提示された仮説へ「近い」「違う」「まだ分からない」と返し、試す・直す・見送る・休むことを選べます。
         </AppText>
       </Card>
 
@@ -80,6 +87,13 @@ export default function LearnScreen() {
         <AppText variant="label">大きな課題には「仮の地図」</AppText>
         <AppText variant="caption" color={colors.inkMuted}>
           細かな予定表を完成させるのではなく、「今・次・あとで」の粗い順序、保留のルール、次の再開点を示します。全部を守る必要はありません。
+        </AppText>
+      </Card>
+
+      <Card tone="amber" style={styles.noteCard}>
+        <AppText variant="label">一人でも、誰かと一緒でも使えます</AppText>
+        <AppText variant="caption" color={colors.inkMuted}>
+          一緒に見る場合も、答える内容・試す案・見せる記録は本人が選びます。記録が自動でセラピストへ送られることはありません。
         </AppText>
       </Card>
 
