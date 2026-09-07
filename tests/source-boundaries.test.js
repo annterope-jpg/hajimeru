@@ -53,4 +53,15 @@ describe('source boundary regressions', () => {
     expect(plan).toContain('正解を選ぶ質問ではありません');
     expect(store).not.toMatch(/hypothesisFit/u);
   });
+
+  it('keeps the therapist guide visible to the person and free of remote sharing claims', () => {
+    const help = readFileSync(join(process.cwd(), 'app', 'help.tsx'), 'utf8');
+    const guide = readFileSync(join(process.cwd(), 'app', 'therapist-guide.tsx'), 'utf8');
+
+    expect(help).toContain('支援者と一緒に使うときのガイド');
+    expect(guide).toContain('本人にも見える共通ガイド');
+    expect(guide).toContain('自動送信しません');
+    expect(guide).toContain('所属機関の手順を優先');
+    expect(guide).not.toMatch(/fetch\s*\(|supabase|sendMessage|postMessage/u);
+  });
 });

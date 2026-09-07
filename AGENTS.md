@@ -10,6 +10,7 @@
 6. `docs/FIRST_ACTION_RULES.md` — 回答、課題側仮説、現在状態、最初の行動の対応規則
 7. `docs/NON_EVALUATIVE_INSIGHTS.md` — 本人向け記録と内部評価指標を分ける非評価的表示規則
 8. `docs/SHARED_DECISION_AND_EXPLANATIONS.md` — 初回説明、仮説への返答、見送り・休息・非共有を守る共同意思決定規則
+9. `docs/THERAPIST_SPEC.md`、`docs/THERAPIST_GUIDE.md` — 本人端末上の伴走仕様、進行台本、安全・共有・逸脱防止
 
 特に次を守る。
 

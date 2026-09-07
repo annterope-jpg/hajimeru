@@ -40,6 +40,7 @@
 - 任意のメールリンク認証、Supabase同期、30日tombstone、アカウント削除
 - 任意AI提案。安全ゲート、500文字制限、8秒タイムアウト、厳格な出力検証、端末内フォールバック
 - Dynamic Type、アプリ内大文字、スクリーンリーダー用ラベル、Reduce Motion
+- 本人にも見える共同利用ガイドと、セラピスト用仕様・5〜10分の伴走マニュアルv0.1
 
 広告SDK、外部分析SDK、ストリーク、順位、連続未達警告は含めていません。
 
@@ -53,6 +54,8 @@
 - [回答と最初の行動の対応仕様](docs/FIRST_ACTION_RULES.md)
 - [非評価的な記録・洞察仕様](docs/NON_EVALUATIVE_INSIGHTS.md)
 - [利用者向け説明と共同意思決定仕様](docs/SHARED_DECISION_AND_EXPLANATIONS.md)
+- [セラピスト伴走仕様 v0.1](docs/THERAPIST_SPEC.md)
+- [セラピスト用マニュアル v0.1](docs/THERAPIST_GUIDE.md)
 - [Phase 0〜20の改定ロードマップと進捗](docs/ROADMAP.md)
 - [安全設計](docs/SAFETY.md)
 - [プライバシー](docs/PRIVACY.md)
