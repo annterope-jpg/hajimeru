@@ -115,6 +115,7 @@ export default function RootLayout() {
           <Stack.Screen name="sync" options={{ title: '任意の同期' }} />
           <Stack.Screen name="privacy" options={{ title: 'プライバシー' }} />
           <Stack.Screen name="data-permissions" options={{ title: 'データと同意' }} />
+          <Stack.Screen name="therapist-guide" options={{ title: '共同利用ガイド' }} />
           <Stack.Screen name="auth/callback" options={{ title: 'サインイン' }} />
         </Stack>
       </SafeAreaProvider>

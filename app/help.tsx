@@ -1,4 +1,5 @@
 import * as Linking from 'expo-linking';
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { AppButton } from '@/components/AppButton';
@@ -21,6 +22,12 @@ export default function HelpScreen() {
         <AppText color={colors.inkMuted}>
           本人が一人で使うことも、本人の同意のもとでセラピスト等と画面を見ながら使うことも想定しています。どちらの場合も、課題、試す方法、共有する内容は本人が選びます。
         </AppText>
+        <AppButton
+          testID="open-therapist-guide"
+          label="支援者と一緒に使うときのガイド"
+          variant="secondary"
+          onPress={() => router.push('./therapist-guide')}
+        />
       </Card>
 
       <View style={styles.list}>
