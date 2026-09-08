@@ -310,3 +310,25 @@ export interface SupportedUseSummary {
   userInitiatedShareOnly: true;
   containsHiddenAssessment: false;
 }
+
+export const SUPPORTED_USE_FOCI = ["start", "roadmap", "retry", "reflection"] as const;
+export type SupportedUseFocus = (typeof SUPPORTED_USE_FOCI)[number];
+
+export const SUPPORTED_USE_END_POINTS = [
+  "overview",
+  "choice",
+  "experiment",
+] as const;
+export type SupportedUseEndPoint = (typeof SUPPORTED_USE_END_POINTS)[number];
+
+/**
+ * In-memory state for one person-initiated, same-device supported-use session.
+ * It is deliberately excluded from persisted and synchronized records.
+ */
+export interface SupportedUseSession {
+  focus: SupportedUseFocus;
+  endPoint: SupportedUseEndPoint;
+  startedAt: ISODateTime;
+  personInitiated: true;
+  sameDeviceOnly: true;
+}

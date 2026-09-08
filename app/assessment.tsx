@@ -56,6 +56,7 @@ export default function AssessmentScreen() {
   const taskText = useAppStore((state) => state.taskText);
   const assessment = useAppStore((state) => state.assessmentDraft);
   const updateAssessment = useAppStore((state) => state.updateAssessment);
+  const supportedUseSession = useAppStore((state) => state.supportedUseSession);
 
   if (!taskText) {
     return <Redirect href="/(tabs)" />;
@@ -248,6 +249,14 @@ export default function AssessmentScreen() {
         )
       }
     >
+      {supportedUseSession ? (
+        <Card tone="blue" style={styles.supportedUseNote}>
+          <AppText variant="label">一緒に確認するときの目的</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            正解や診断を決める質問ではありません。今の一歩を変えそうな条件だけを確認し、本人が迷う質問は飛ばせます。
+          </AppText>
+        </Card>
+      ) : null}
       <Card tone="green" style={styles.taskCard}>
         <AppText variant="caption" color={colors.inkMuted}>
           始めたいこと
@@ -385,6 +394,7 @@ function AdvancedAssessment() {
 }
 
 const styles = StyleSheet.create({
+  supportedUseNote: { marginBottom: spacing.md },
   taskCard: { marginBottom: spacing.xxl },
   title: { marginTop: spacing.xxl, marginBottom: spacing.md },
   help: { marginBottom: spacing.xl },

@@ -64,4 +64,18 @@ describe('source boundary regressions', () => {
     expect(guide).toContain('所属機関の手順を優先');
     expect(guide).not.toMatch(/fetch\s*\(|supabase|sendMessage|postMessage/u);
   });
+
+  it('keeps supported-use session state local, temporary, and person-controlled', () => {
+    const screen = readFileSync(join(process.cwd(), 'app', 'supported-use.tsx'), 'utf8');
+    const banner = readFileSync(join(process.cwd(), 'src', 'components', 'SupportedUseBanner.tsx'), 'utf8');
+    const store = readFileSync(join(process.cwd(), 'src', 'state', 'useAppStore.ts'), 'utf8');
+    const snapshot = store.slice(store.indexOf('function persistedSnapshot'), store.indexOf('function persistShell'));
+
+    expect(screen).toContain('本人が開始・終了します');
+    expect(screen).toContain('自動共有はありません');
+    expect(screen).toContain('支援者による回答の上書き');
+    expect(banner).toContain('一緒に見るモードを終了');
+    expect(snapshot).not.toMatch(/supportedUseSession/u);
+    expect(screen).not.toMatch(/fetch\s*\(|supabase|AsyncStorage|saveAttempt/u);
+  });
 });
