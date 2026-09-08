@@ -19,11 +19,13 @@ export default function ReflectionScreen() {
   const draft = useAppStore((state) => state.reflectionDraft);
   const updateReflection = useAppStore((state) => state.updateReflection);
   const resetFlow = useAppStore((state) => state.resetFlow);
+  const endSupportedUse = useAppStore((state) => state.endSupportedUse);
   const [outcome, setOutcome] = useState<AttemptOutcome>();
   const [saving, setSaving] = useState(false);
 
   async function finishWithoutReflection() {
     await resetFlow();
+    endSupportedUse();
     router.replace('/(tabs)');
   }
 
@@ -51,6 +53,7 @@ export default function ReflectionScreen() {
         await repository.saveAttempt(updated, { entityId: attemptId, updatedAt: now });
       }
       await resetFlow();
+      endSupportedUse();
       router.replace('/(tabs)/insights');
     } finally {
       setSaving(false);

@@ -1,0 +1,20 @@
+appId: jp.example.hajimeru
+name: 本人が一緒に見るモードを開始して終了できる
+tags:
+  - supported-use
+  - privacy
+---
+- launchApp
+- openLink: "hajimeru://supported-use"
+- assertVisible: "今日は、どこを一緒に見ますか？"
+- tapOn: "新しい一歩を作る"
+- tapOn: "次の一歩を選ぶまで"
+- tapOn:
+    id: "supported-use-consent"
+- tapOn:
+    id: "supported-use-start"
+- assertVisible:
+    id: "supported-use-banner"
+- tapOn: "終了"
+- assertNotVisible:
+    id: "supported-use-banner"

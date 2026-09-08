@@ -7,6 +7,7 @@ import type {
   EmotionalResponse,
   InterventionPlan,
   RoadmapConcern,
+  SupportedUseSession,
   TaskAttempt,
   TaskRoadmap,
 } from '@/domain';
@@ -59,6 +60,7 @@ interface ShellState {
   timerStartedAt?: string;
   timerEndsAt?: string;
   reflectionDraft: ReflectionDraft;
+  supportedUseSession?: SupportedUseSession;
   initializeShell: () => Promise<void>;
   clearShellData: () => Promise<void>;
   finishOnboarding: () => Promise<void>;
@@ -79,6 +81,8 @@ interface ShellState {
   clearTimer: () => Promise<void>;
   updateReflection: (patch: Partial<ReflectionDraft>) => void;
   resetFlow: () => Promise<void>;
+  startSupportedUse: (session: SupportedUseSession) => void;
+  endSupportedUse: () => void;
 }
 
 type PersistedShell = Pick<
@@ -140,6 +144,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
   assessmentDraft: {},
   selectedDurationMinutes: 3,
   reflectionDraft: {},
+  supportedUseSession: undefined,
   initializeShell: async () => {
     try {
       const raw = await AsyncStorage.getItem(SHELL_KEY);
@@ -189,6 +194,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerStartedAt: undefined,
       timerEndsAt: undefined,
       reflectionDraft: {},
+      supportedUseSession: undefined,
     });
   },
   finishOnboarding: async () => {
@@ -302,5 +308,11 @@ export const useAppStore = create<ShellState>((set, get) => ({
       reflectionDraft: {},
     });
     await persistShell(get());
+  },
+  startSupportedUse: (supportedUseSession) => {
+    set({ supportedUseSession });
+  },
+  endSupportedUse: () => {
+    set({ supportedUseSession: undefined });
   },
 }));

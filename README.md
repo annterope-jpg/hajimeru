@@ -41,6 +41,7 @@
 - 任意AI提案。安全ゲート、500文字制限、8秒タイムアウト、厳格な出力検証、端末内フォールバック
 - Dynamic Type、アプリ内大文字、スクリーンリーダー用ラベル、Reduce Motion
 - 本人にも見える共同利用ガイドと、セラピスト用仕様・5〜10分の伴走マニュアルv0.1
+- 本人が焦点と終了目安を選び、全画面から終了できる端末内だけの「一緒に見るモード」
 
 広告SDK、外部分析SDK、ストリーク、順位、連続未達警告は含めていません。
 
@@ -56,6 +57,7 @@
 - [利用者向け説明と共同意思決定仕様](docs/SHARED_DECISION_AND_EXPLANATIONS.md)
 - [セラピスト伴走仕様 v0.1](docs/THERAPIST_SPEC.md)
 - [セラピスト用マニュアル v0.1](docs/THERAPIST_GUIDE.md)
+- [本人端末上の伴走モード仕様](docs/SUPPORTED_USE_MODE.md)
 - [Phase 0〜20の改定ロードマップと進捗](docs/ROADMAP.md)
 - [安全設計](docs/SAFETY.md)
 - [プライバシー](docs/PRIVACY.md)

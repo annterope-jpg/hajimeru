@@ -63,6 +63,7 @@ export default function TherapistGuideScreen() {
         現在はUX確認用試作です。このガイドは診療手順や専門職の判断を置き換えません。
       </AppText>
       <AppButton label="データと同意を確認" variant="secondary" onPress={() => router.push('/data-permissions')} />
+      <AppButton testID="open-supported-use" label="一緒に見るモードを設定" onPress={() => router.push('./supported-use')} />
     </Screen>
   );
 }

@@ -6,5 +6,6 @@ export * from "./roadmap";
 export * from "./regressionGuards";
 export * from "./safety";
 export * from "./sharedDecision";
+export * from "./supportedUse";
 export * from "./suggestions";
 export * from "./types";
