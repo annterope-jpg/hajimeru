@@ -1,0 +1,45 @@
+appId: jp.example.hajimeru
+name: 困った後に一歩を小さくして再開できる
+tags:
+  - smoke
+  - retry
+---
+- launchApp:
+    clearState: true
+
+- tapOn:
+    id: "onboarding-next"
+- tapOn:
+    id: "age-confirm-checkbox"
+- tapOn:
+    id: "onboarding-continue"
+
+- tapOn:
+    id: "task-input"
+- inputText: "部屋を片付ける"
+- tapOn:
+    id: "home-start"
+- tapOn: "まだ曖昧"
+- tapOn:
+    id: "assessment-next"
+- tapOn: "7"
+- tapOn:
+    id: "assessment-next"
+- tapOn: "5"
+- tapOn:
+    id: "assessment-next"
+
+- tapOn: "まだわからない"
+- tapOn:
+    id: "plan-start"
+- assertVisible:
+    id: "timer-started"
+- tapOn: "ここで止める（成功）"
+
+- tapOn: "困った・止まった"
+- assertVisible: "今の一歩で、変えるならどこですか？"
+- tapOn: "まだ大きかった"
+- assertVisible: "調整した最初の一歩"
+- tapOn:
+    id: "retry-adjusted-action"
+- assertVisible: "開始プラン"

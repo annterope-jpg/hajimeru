@@ -3,6 +3,7 @@ export * from "./factories";
 export * from "./insights";
 export * from "./permissions";
 export * from "./roadmap";
+export * from "./retry";
 export * from "./regressionGuards";
 export * from "./safety";
 export * from "./sharedDecision";

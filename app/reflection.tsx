@@ -96,7 +96,13 @@ export default function ReflectionScreen() {
           <ChoiceChips
             accessibilityLabel="結果"
             value={outcome}
-            onChange={setOutcome}
+            onChange={(value) => {
+              if (value === 'stuck') {
+                router.push('./stuck');
+                return;
+              }
+              setOutcome(value);
+            }}
             choices={[
               { value: 'stopped_success', label: 'ここで終了（成功）' },
               { value: 'continued', label: 'もう少し続ける' },

@@ -81,6 +81,7 @@ interface ShellState {
   clearTimer: () => Promise<void>;
   updateReflection: (patch: Partial<ReflectionDraft>) => void;
   resetFlow: () => Promise<void>;
+  prepareRetry: (plan: InterventionPlan) => Promise<void>;
   startSupportedUse: (session: SupportedUseSession) => void;
   endSupportedUse: () => void;
 }
@@ -302,6 +303,16 @@ export const useAppStore = create<ShellState>((set, get) => ({
       selectedDurationMinutes: 3,
       activePlan: undefined,
       activeRoadmap: undefined,
+      activeAttemptId: undefined,
+      timerStartedAt: undefined,
+      timerEndsAt: undefined,
+      reflectionDraft: {},
+    });
+    await persistShell(get());
+  },
+  prepareRetry: async (activePlan) => {
+    set({
+      activePlan,
       activeAttemptId: undefined,
       timerStartedAt: undefined,
       timerEndsAt: undefined,
