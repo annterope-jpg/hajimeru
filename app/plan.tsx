@@ -57,7 +57,11 @@ function labelOrFallback(key: string) {
 }
 
 export default function PlanScreen() {
-  const { attemptId: linkedAttemptId } = useLocalSearchParams<{ attemptId?: string | string[] }>();
+  const { attemptId: linkedAttemptId, retry, cue } = useLocalSearchParams<{
+    attemptId?: string | string[];
+    retry?: string | string[];
+    cue?: string | string[];
+  }>();
   const taskText = useAppStore((state) => state.taskText);
   const draft = useAppStore((state) => state.assessmentDraft);
   const selectedDuration = useAppStore((state) => state.selectedDurationMinutes);
@@ -80,7 +84,7 @@ export default function PlanScreen() {
     linkedAttemptId ? 'loading' : 'idle',
   );
   const [beginning, setBeginning] = useState(false);
-  const [cueOpen, setCueOpen] = useState(false);
+  const [cueOpen, setCueOpen] = useState(cue === '1');
   const [cueHour, setCueHour] = useState('19');
   const [cueMinute, setCueMinute] = useState('00');
   const [cueSaving, setCueSaving] = useState(false);
@@ -160,7 +164,7 @@ export default function PlanScreen() {
       router.replace('/(tabs)');
       return;
     }
-    if (!linkedAttemptId) {
+    if (!linkedAttemptId && retry !== '1') {
       const plan = createLocalInterventionPlan({
         taskText,
         assessment,
@@ -180,7 +184,7 @@ export default function PlanScreen() {
       .getPreferences()
       .then((stored) => setPreferences(stored ?? fallbackPreferences))
       .catch(() => undefined);
-  }, [assessment, category, draft.activationSource, draft.anxietyReliefPreference, draft.competingAction, draft.emotionalResponses, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.valueAnchor, linkedAttemptId, restoring, selectedDuration, setPlan, setRoadmap, taskText]);
+  }, [assessment, category, draft.activationSource, draft.anxietyReliefPreference, draft.competingAction, draft.emotionalResponses, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.valueAnchor, linkedAttemptId, restoring, retry, selectedDuration, setPlan, setRoadmap, taskText]);
 
   function openRoadmap() {
     if (!activeRoadmap) updateAssessment({ roadmapRequested: true });

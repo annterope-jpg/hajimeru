@@ -78,4 +78,24 @@ describe('source boundary regressions', () => {
     expect(snapshot).not.toMatch(/supportedUseSession/u);
     expect(screen).not.toMatch(/fetch\s*\(|supabase|AsyncStorage|saveAttempt/u);
   });
+
+  it('treats getting stuck as an optional adjustment rather than a failure judgment', () => {
+    const reflection = readFileSync(join(process.cwd(), 'app', 'reflection.tsx'), 'utf8');
+    const screen = readFileSync(join(process.cwd(), 'app', 'stuck.tsx'), 'utf8');
+    const retry = readFileSync(join(process.cwd(), 'src', 'domain', 'retry.ts'), 'utf8');
+    const plan = readFileSync(join(process.cwd(), 'app', 'plan.tsx'), 'utf8');
+
+    expect(reflection).toContain("router.push('./stuck')");
+    expect(screen).toContain('できなかった理由を決める画面ではありません');
+    expect(screen).toContain('理由を選ばず、ここで終える');
+    expect(screen).toContain("outcome: 'stuck'");
+    expect(screen).toContain('prepareRetry(adjustment.adjustedPlan)');
+    expect(retry).toContain('まだ大きかった');
+    expect(retry).toContain('決めることが残った');
+    expect(retry).toContain('不安・緊張で固まった');
+    expect(retry).toContain('眠さ・頭の霧が強かった');
+    expect(retry).toContain('今は選ばない');
+    expect(`${screen}\n${retry}`).not.toMatch(/なぜできなかった|次は必ず/u);
+    expect(plan).toContain("retry !== '1'");
+  });
 });
