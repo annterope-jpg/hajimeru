@@ -88,6 +88,8 @@ Phase 4の4型は後続Phaseで段階的に利用する。`StateOverlay`はPhase
 
 ## 7. 既知の限界
 
+Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
+
 - TypeScript型は実行時に外部・旧版データの妥当性を保証しない。後続の保存形式変更時はruntime decoderが必要
 - 禁止文言の完全一致検査は、婉曲な圧力、恥、因果表現を全て検出できない
 - ログガードは安全な契約を定義した段階で、クラッシュ報告基盤や運用監査は未実装

@@ -10,7 +10,12 @@ import { MultiChoiceChips } from '@/components/MultiChoiceChips';
 import { RatingScale } from '@/components/RatingScale';
 import { Screen } from '@/components/Screen';
 import { StepIndicator } from '@/components/StepIndicator';
-import type { ActivationSource, AnxietyReliefPreference, EmotionalResponse } from '@/domain';
+import {
+  needsEmotionReliefChoice,
+  type ActivationSource,
+  type AnxietyReliefPreference,
+  type EmotionalResponse,
+} from '@/domain';
 import { useAppStore } from '@/state/useAppStore';
 import { colors } from '@/theme/colors';
 import { radii, spacing } from '@/theme/spacing';
@@ -31,17 +36,18 @@ const questions = [
 ] as const;
 
 const emotionalResponseChoices: { value: EmotionalResponse; label: string; description: string }[] = [
-  { value: 'anxiety', label: '不安・失敗が怖い', description: '結果、評価、分からなさが気になる' },
+  { value: 'uncertainty', label: '分からなさ・見通しの不安', description: '何が起きるか、何をすればよいか見えにくい' },
+  { value: 'self_evaluation', label: '失敗・評価が怖い', description: '出来ばえや人からの評価が気になる' },
   { value: 'boredom', label: '面倒・退屈', description: '刺激が少なく、取りかかる意味が薄く感じる' },
-  { value: 'shame', label: '恥ずかしさ・罪悪感', description: '遅れや未着手を責める気持ちがある' },
+  { value: 'shame', label: '恥・自責', description: '遅れや未着手を責める気持ちがある' },
   { value: 'pressure', label: '急かされる・反発したくなる', description: '義務や指示として感じると離れたくなる' },
   { value: 'unclear', label: '言葉にしにくいイヤさ', description: '種類は分からないが避けたくなる' },
 ];
 
 const anxietyReliefChoices: { value: AnxietyReliefPreference; label: string; description: string }[] = [
-  { value: 'yes', label: '少し下がると始めやすそう', description: '安心材料や確認できる一歩を先に置く' },
+  { value: 'yes', label: '先に1つ置きたい', description: '負担に合う短い準備を最初の一歩より前に置く' },
   { value: 'unsure', label: 'まだ分からない', description: '決めずに通常の開始プランを使う' },
-  { value: 'no', label: '不安があっても一歩は試せそう', description: '不安をなくすことを開始条件にしない' },
+  { value: 'no', label: '今は下げずに一歩を試す', description: '気持ちを変えることを開始条件にしない' },
 ];
 
 const activationSourceChoices: { value: ActivationSource; label: string; description: string }[] = [
@@ -148,20 +154,34 @@ export default function AssessmentScreen() {
               />
               <View style={styles.followupQuestion}>
                 <AppText variant="label">このイヤさに近いものは？（任意・複数可）</AppText>
-                <AppText variant="caption" color={colors.inkMuted}>種類によって、受け入れて小さく始めるか、不安を下げる準備を置くかを調整します。</AppText>
+                <AppText variant="caption" color={colors.inkMuted}>同じイヤさでも、分からなさ、評価、自責、圧力、退屈では役立つ一歩が異なります。原因や診断を決める質問ではありません。</AppText>
                 <MultiChoiceChips
                   accessibilityLabel="イヤさに近い感情反応"
                   value={assessment.emotionalResponses ?? []}
-                  onChange={(emotionalResponses) => updateAssessment({ emotionalResponses })}
+                  onChange={(emotionalResponses) =>
+                    updateAssessment({
+                      emotionalResponses,
+                      anxietyReliefPreference: needsEmotionReliefChoice(
+                        emotionalResponses,
+                        assessment.activationSource,
+                      )
+                        ? assessment.anxietyReliefPreference
+                        : undefined,
+                    })
+                  }
                   choices={emotionalResponseChoices}
                   maxSelections={3}
                 />
               </View>
-              {assessment.emotionalResponses?.includes('anxiety') ? (
+              {needsEmotionReliefChoice(
+                assessment.emotionalResponses ?? [],
+                assessment.activationSource,
+              ) ? (
                 <View style={styles.followupQuestion}>
-                  <AppText variant="label">不安を少し下げると、始めやすくなりそうですか？（任意）</AppText>
+                  <AppText variant="label">気持ちの負担を少し下げる準備を、先に置きたいですか？（任意）</AppText>
+                  <AppText variant="caption" color={colors.inkMuted}>「先に置きたい」を選んだ場合だけ、選んだ反応に合う準備をプランへ加えます。</AppText>
                   <ChoiceChips
-                    accessibilityLabel="不安を下げる支援が役立ちそうか"
+                    accessibilityLabel="気持ちの負担を下げる準備を先に置くか"
                     value={assessment.anxietyReliefPreference}
                     onChange={(anxietyReliefPreference) => updateAssessment({ anxietyReliefPreference })}
                     choices={anxietyReliefChoices}
@@ -185,14 +205,25 @@ export default function AssessmentScreen() {
                 <ChoiceChips
                   accessibilityLabel="身体や頭の重さの種類"
                   value={assessment.activationSource}
-                  onChange={(activationSource) => updateAssessment({ activationSource })}
+                  onChange={(activationSource) =>
+                    updateAssessment({
+                      activationSource,
+                      anxietyReliefPreference: needsEmotionReliefChoice(
+                        assessment.emotionalResponses ?? [],
+                        activationSource,
+                      )
+                        ? assessment.anxietyReliefPreference
+                        : undefined,
+                    })
+                  }
                   choices={activationSourceChoices}
                 />
               </View>
               {(assessment.activationSource === 'freeze' || assessment.activationSource === 'both') &&
-              !assessment.emotionalResponses?.includes('anxiety') ? (
+              !needsEmotionReliefChoice(assessment.emotionalResponses ?? []) ? (
                 <View style={styles.followupQuestion}>
-                  <AppText variant="label">緊張を少し下げると、始めやすくなりそうですか？（任意）</AppText>
+                  <AppText variant="label">緊張を少し下げる準備を、先に置きたいですか？（任意）</AppText>
+                  <AppText variant="caption" color={colors.inkMuted}>希望した場合だけ、呼吸と姿勢の短い準備をプランへ加えます。</AppText>
                   <ChoiceChips
                     accessibilityLabel="緊張を下げる支援が役立ちそうか"
                     value={assessment.anxietyReliefPreference}

@@ -1,4 +1,5 @@
 export * from "./assessment";
+export * from "./emotionSupport";
 export * from "./factories";
 export * from "./insights";
 export * from "./permissions";
