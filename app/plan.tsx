@@ -358,9 +358,13 @@ export default function PlanScreen() {
           <AppText variant="label">今の状態を、課題とは別に扱います</AppText>
           <AppText color={colors.inkMuted}>
             {activePlan.stateOverlay.selected === 'freeze_or_tension'
-              ? '不安や緊張で固まる感じには、覚醒を上げるより先に緊張を少し下げる案を置きます。'
+              ? activePlan.activationRitual
+                ? '不安や緊張で固まる感じに合わせ、本人が選んだ短い準備を先に置きます。'
+                : '不安や緊張で固まる感じかもしれません。緊張を下げる準備は希望された場合だけ加えます。'
               : activePlan.stateOverlay.selected === 'both'
-                ? 'ぼんやりと緊張が重なるときは、呼吸と身体の準備を短く行います。'
+                ? activePlan.activationRitual?.includes('息')
+                  ? 'ぼんやりと緊張が重なる感じに合わせ、本人が選んだ呼吸と身体の準備を短く行います。'
+                  : 'ぼんやりと緊張が重なる感じかもしれません。今回は身体の準備だけを置きます。'
                 : '眠さや身体の重さが強いときは、複雑な計画より先に身体の準備を置きます。'}
           </AppText>
           {activePlan.activationRitual ? <AppText variant="heading">{activePlan.activationRitual}</AppText> : null}
@@ -487,7 +491,12 @@ export default function PlanScreen() {
         {activePlan.valueAnchor ? <PlanRow label="この一歩の意味" value={activePlan.valueAnchor} /> : null}
         {activePlan.returnCue ? <PlanRow label="脱線・失念から戻る目印" value={activePlan.returnCue} /> : null}
         {activePlan.reassuranceAction ? <PlanRow label="忘れる心配を頭から下ろす" value={activePlan.reassuranceAction} /> : null}
-        {activePlan.emotionSupport ? <PlanRow label="不安・緊張を少し下げる" value={activePlan.emotionSupport} /> : null}
+        {activePlan.emotionSupport ? (
+          <PlanRow
+            label={activePlan.emotionSupportLabel ?? '気持ちに合う準備'}
+            value={activePlan.emotionSupport}
+          />
+        ) : null}
       </View>
 
       <AppText variant="label" style={styles.sectionTitle}>

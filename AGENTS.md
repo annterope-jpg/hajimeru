@@ -34,3 +34,5 @@ pnpm typecheck
 pnpm lint
 pnpm test --run
 ```
+
+Phase 11以降の感情反応に関する変更では、`docs/EMOTIONAL_SUPPORT.md`も必ず読み、本人の希望なしに不安低減を追加せず、緊急性を一般的な動機づけとして使わないこと。

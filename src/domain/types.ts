@@ -113,6 +113,10 @@ export interface InterventionPlan {
   reassuranceAction: string | null;
   /** Optional support chosen from the person's description of anxiety or freezing. */
   emotionSupport: string | null;
+  /** Person-facing label for the selected emotional support; absent on older records. */
+  emotionSupportLabel?: string | null;
+  /** Working category, never a diagnosis or inferred cause. */
+  emotionSupportKind?: EmotionSupportKind | null;
   supportiveMessage: string;
   /** New plans contain task hypotheses only; legacy records may include lowActivation. */
   bottlenecks: Bottleneck[];
@@ -142,6 +146,8 @@ export const ROADMAP_CONCERNS = [
 export type RoadmapConcern = (typeof ROADMAP_CONCERNS)[number];
 
 export const EMOTIONAL_RESPONSES = [
+  "uncertainty",
+  "self_evaluation",
   "anxiety",
   "boredom",
   "shame",
@@ -150,6 +156,17 @@ export const EMOTIONAL_RESPONSES = [
 ] as const;
 
 export type EmotionalResponse = (typeof EMOTIONAL_RESPONSES)[number];
+
+export const EMOTION_SUPPORT_KINDS = [
+  "uncertainty",
+  "self_evaluation",
+  "shame_self_blame",
+  "pressure",
+  "boredom",
+  "freeze_tension",
+] as const;
+
+export type EmotionSupportKind = (typeof EMOTION_SUPPORT_KINDS)[number];
 
 export const ANXIETY_RELIEF_PREFERENCES = ["yes", "unsure", "no"] as const;
 export type AnxietyReliefPreference = (typeof ANXIETY_RELIEF_PREFERENCES)[number];

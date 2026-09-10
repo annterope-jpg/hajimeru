@@ -1,0 +1,23 @@
+appId: jp.hajimeru.app
+---
+- launchApp:
+    clearState: true
+- tapOn: "18歳以上です"
+- tapOn: "同意して始める"
+- tapOn:
+    id: "task-input"
+- inputText: "メールに返信する"
+- tapOn: "今、始める"
+- tapOn: "はっきりしている"
+- tapOn:
+    id: "assessment-next"
+- tapOn: "8"
+- tapOn: "失敗・評価が怖い"
+- assertVisible: "気持ちの負担を少し下げる準備を、先に置きたいですか？（任意）"
+- tapOn: "先に1つ置きたい"
+- tapOn:
+    id: "assessment-next"
+- tapOn: "2"
+- tapOn: "開始プランを見る"
+- assertVisible: "評価から距離をとる"
+- assertVisible: "人に見せない下書き"

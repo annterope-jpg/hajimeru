@@ -102,6 +102,7 @@ describe("createLocalInterventionPlan", () => {
       taskText: "部屋を片付ける",
       assessment,
       activationSource: "freeze",
+      anxietyReliefPreference: "yes",
     });
 
     expect(assessment.primaryBottlenecks).toEqual(["taskClarity", "aversion"]);
@@ -198,6 +199,6 @@ describe("createLocalInterventionPlan", () => {
 
     expect(plan.emotionSupport).toContain("不確かなことを1つ");
     expect(plan.activationRitual).toContain("息を長く1回");
-    expect(plan.supportiveMessage).toContain("不安を少し下げて");
+    expect(plan.supportiveMessage).toContain("今確認できることを1つ");
   });
 });

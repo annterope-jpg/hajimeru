@@ -135,6 +135,20 @@ function isDuration(value: unknown): value is 1 | 3 | 5 {
   return value === 1 || value === 3 || value === 5;
 }
 
+function migrateAssessmentDraft(draft: AssessmentDraft | undefined): AssessmentDraft {
+  if (!draft?.emotionalResponses?.includes('anxiety')) return draft ?? {};
+  return {
+    ...draft,
+    emotionalResponses: Array.from(
+      new Set(
+        draft.emotionalResponses.map((response) =>
+          response === 'anxiety' ? 'uncertainty' : response,
+        ),
+      ),
+    ),
+  };
+}
+
 export const useAppStore = create<ShellState>((set, get) => ({
   hydrated: false,
   onboardingComplete: false,
@@ -158,7 +172,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
         reduceMotion: parsed.reduceMotion === true,
         screenReaderOptimized: parsed.screenReaderOptimized === true,
         taskText: typeof parsed.taskText === 'string' ? parsed.taskText : '',
-        assessmentDraft: parsed.assessmentDraft ?? {},
+        assessmentDraft: migrateAssessmentDraft(parsed.assessmentDraft),
         selectedDurationMinutes: isDuration(parsed.selectedDurationMinutes)
           ? parsed.selectedDurationMinutes
           : 3,

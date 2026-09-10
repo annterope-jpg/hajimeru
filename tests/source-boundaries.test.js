@@ -98,4 +98,23 @@ describe('source boundary regressions', () => {
     expect(`${screen}\n${retry}`).not.toMatch(/なぜできなかった|次は必ず/u);
     expect(plan).toContain("retry !== '1'");
   });
+
+  it('keeps emotional support person-selected, specific, and free of urgency pressure', () => {
+    const assessment = readFileSync(join(process.cwd(), 'app', 'assessment.tsx'), 'utf8');
+    const plan = readFileSync(join(process.cwd(), 'app', 'plan.tsx'), 'utf8');
+    const support = readFileSync(join(process.cwd(), 'src', 'domain', 'emotionSupport.ts'), 'utf8');
+    const store = readFileSync(join(process.cwd(), 'src', 'state', 'useAppStore.ts'), 'utf8');
+
+    expect(assessment).toContain('分からなさ・見通しの不安');
+    expect(assessment).toContain('失敗・評価が怖い');
+    expect(assessment).toContain('恥・自責');
+    expect(assessment).toContain('急かされる・反発したくなる');
+    expect(assessment).toContain('面倒・退屈');
+    expect(assessment).toContain('先に1つ置きたい');
+    expect(support).toContain("input.preference === 'yes'");
+    expect(support).toContain('圧力を動機づけに足さず');
+    expect(plan).toContain('emotionSupportLabel');
+    expect(store).toContain("response === 'anxiety' ? 'uncertainty'");
+    expect(`${assessment}\n${support}`).not.toMatch(/急げば|締切直前なら|本当の原因/u);
+  });
 });
