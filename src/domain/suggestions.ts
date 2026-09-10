@@ -6,13 +6,16 @@ import type {
   Bottleneck,
   EmotionalResponse,
   InterventionPlan,
+  LocalTimeContext,
   Score0To10,
   StateOverlay,
+  StateExperience,
   TaskCategory,
   TaskBottleneck,
   TimerMinutes,
 } from "./types";
 import { selectEmotionSupport } from "./emotionSupport";
+import { createStateOverlay } from "./stateSupport";
 
 export const TASK_CATEGORY_LABELS: Readonly<Record<TaskCategory, string>> = {
   tidying: "片付け",
@@ -208,6 +211,8 @@ export interface CreateLocalInterventionPlanInput {
   emotionalResponses?: EmotionalResponse[];
   anxietyReliefPreference?: AnxietyReliefPreference;
   activationSource?: ActivationSource;
+  stateExperience?: StateExperience;
+  localTimeContext?: LocalTimeContext;
   createdAt?: string;
 }
 
@@ -232,6 +237,8 @@ export function createLocalInterventionPlan({
   emotionalResponses = [],
   anxietyReliefPreference,
   activationSource,
+  stateExperience,
+  localTimeContext,
   createdAt = new Date().toISOString(),
 }: CreateLocalInterventionPlanInput): InterventionPlan {
   const bottlenecks = [...assessment.primaryBottlenecks];
@@ -242,7 +249,7 @@ export function createLocalInterventionPlan({
     activationSource,
   });
   const suggestion = getFirstActionSuggestion(taskText, category, bottlenecks);
-  const stateOverlay: StateOverlay =
+  const legacyStateOverlay: StateOverlay =
     assessment.stateOverlay?.selected === "low_activation"
       ? {
           ...assessment.stateOverlay,
@@ -258,6 +265,12 @@ export function createLocalInterventionPlan({
           selected: null,
           allowedChoices: [],
         });
+  const stateOverlay = createStateOverlay({
+    experience: stateExperience,
+    localTimeContext,
+    reliefPreference: anxietyReliefPreference,
+    legacyOverlay: legacyStateOverlay,
+  });
 
   // getLocalActionSuggestions has a total category map and always returns three.
   if (!suggestion) {
@@ -275,18 +288,7 @@ export function createLocalInterventionPlan({
     firstActionRationaleTag: suggestion.rationaleTag,
     durationMinutes,
     startCue,
-    activationRitual:
-      stateOverlay.status === "answered" && stateOverlay.selected !== "none"
-        ? stateOverlay.selected === "freeze_or_tension"
-          ? anxietyReliefPreference === "yes"
-            ? "肩を少し下げ、息を長く1回吐く"
-            : null
-          : stateOverlay.selected === "both"
-            ? anxietyReliefPreference === "yes"
-              ? "息を長く1回吐いてから、立って水を一口飲む"
-              : "立って、水を一口飲む"
-            : "立って、水を一口飲む"
-        : null,
+    activationRitual: stateOverlay.support?.action ?? null,
     distractionFriction: includes(bottlenecks, "competingReward")
       ? "スマホの通知を切り、手の届かない所に置く"
       : null,

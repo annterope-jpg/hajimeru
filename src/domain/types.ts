@@ -174,6 +174,44 @@ export type AnxietyReliefPreference = (typeof ANXIETY_RELIEF_PREFERENCES)[number
 export const ACTIVATION_SOURCES = ["fatigue", "freeze", "both", "unclear"] as const;
 export type ActivationSource = (typeof ACTIVATION_SOURCES)[number];
 
+export const STATE_EXPERIENCES = [
+  "sleepiness",
+  "fatigue",
+  "brain_fog",
+  "body_heaviness",
+  "freeze",
+  "mixed",
+  "unclear",
+  "none",
+] as const;
+export type StateExperience = (typeof STATE_EXPERIENCES)[number];
+
+/** Capture-time context. Offset is minutes east of UTC (Tokyo is +540). */
+export interface LocalTimeContext {
+  observedAt: ISODateTime;
+  localDate: ISODate;
+  localHour: number;
+  localMinute: number;
+  timeZone: string | null;
+  timeZoneOffsetMinutes: number;
+}
+
+export type StateSupportChoice =
+  | "continue"
+  | "make_smaller"
+  | "change_time"
+  | "rest"
+  | "seek_support";
+
+export interface StateSupport {
+  heading: string;
+  message: string;
+  /** Null means no physical preparation is prescribed. */
+  action: string | null;
+  choices: readonly StateSupportChoice[];
+  consultationGuidance: string;
+}
+
 /**
  * A brief, user-selected description of what is unclear about a large task.
  * It is used to adapt the orientation steps; it is not a diagnostic label.
@@ -282,7 +320,14 @@ export interface StateOverlay {
     | "make_smaller"
     | "change_time"
     | "rest"
+    | "seek_support"
   )[];
+  /** Self-described state on new plans; missing on legacy plans is not inferred. */
+  experience?: StateExperience;
+  /** Snapshot from when this state was described; never recomputed on restore. */
+  localTimeContext?: LocalTimeContext;
+  /** Non-diagnostic choices matched to the self-described state. */
+  support?: StateSupport;
 }
 
 /** A deterministic, inspectable rule; never a diagnostic or causal conclusion. */

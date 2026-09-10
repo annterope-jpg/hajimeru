@@ -1,4 +1,5 @@
-import type { InterventionPlan } from "./types";
+import { createStateOverlay } from "./stateSupport";
+import type { InterventionPlan, LocalTimeContext } from "./types";
 
 export const RETRY_REASONS = [
   "action_too_large",
@@ -34,6 +35,7 @@ function shortAction(action: string) {
 export function createRetryAdjustment(
   plan: InterventionPlan,
   reason: RetryReason,
+  localTimeContext?: LocalTimeContext,
 ): RetryAdjustment {
   if (reason === "not_choose_now") {
     return {
@@ -86,13 +88,9 @@ export function createRetryAdjustment(
       message: "不安をなくすことは求めません。今は接近しない選択もできます。",
       adjustedPlan: {
         ...plan,
-        activationRitual: "息を長めに1回吐き、目の前の1点を見る",
+        activationRitual: null,
         supportiveMessage: "緊張が残っていても、見るだけで終えて大丈夫です。",
-        stateOverlay: {
-          status: "answered",
-          selected: "freeze_or_tension",
-          allowedChoices: ["continue", "make_smaller", "change_time", "rest"],
-        },
+        stateOverlay: createStateOverlay({ experience: "freeze", localTimeContext }),
         source: "local",
         createdAt: new Date().toISOString(),
       },
@@ -106,13 +104,9 @@ export function createRetryAdjustment(
     message: "今すぐ進めることを前提にせず、身体準備・時間変更・休息から選べます。",
     adjustedPlan: {
       ...plan,
-      activationRitual: "水を一口飲むか、姿勢を1回変える",
+      activationRitual: null,
       supportiveMessage: "身体の準備だけで終えても大丈夫です。",
-      stateOverlay: {
-        status: "answered",
-        selected: "low_activation",
-        allowedChoices: ["continue", "make_smaller", "change_time", "rest"],
-      },
+      stateOverlay: createStateOverlay({ experience: "unclear", localTimeContext }),
       source: "local",
       createdAt: new Date().toISOString(),
     },

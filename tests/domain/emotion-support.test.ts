@@ -60,12 +60,14 @@ describe('person-selected emotional support', () => {
       taskText: 'メールを返信する',
       assessment,
       activationSource: 'freeze',
+      stateExperience: 'freeze',
       anxietyReliefPreference: 'no',
     });
     const requested = createLocalInterventionPlan({
       taskText: 'メールを返信する',
       assessment,
       activationSource: 'freeze',
+      stateExperience: 'freeze',
       anxietyReliefPreference: 'yes',
     });
 

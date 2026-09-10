@@ -41,12 +41,23 @@ describe('stuck retry adjustment', () => {
 
   it('keeps freeze and low activation as separate, non-diagnostic adjustments', () => {
     const plan = attemptFixture().plan;
-    const freeze = createRetryAdjustment(plan, 'freeze_or_tension');
-    const lowActivation = createRetryAdjustment(plan, 'low_activation');
+    const localTimeContext = {
+      observedAt: '2026-09-10T21:30:00.000Z',
+      localDate: '2026-09-11',
+      localHour: 6,
+      localMinute: 30,
+      timeZone: 'Asia/Tokyo',
+      timeZoneOffsetMinutes: 540,
+    };
+    const freeze = createRetryAdjustment(plan, 'freeze_or_tension', localTimeContext);
+    const lowActivation = createRetryAdjustment(plan, 'low_activation', localTimeContext);
 
     expect(freeze.adjustedPlan?.stateOverlay?.selected).toBe('freeze_or_tension');
     expect(freeze.choices).toEqual(['retry', 'change_time', 'rest', 'end']);
     expect(lowActivation.adjustedPlan?.stateOverlay?.selected).toBe('low_activation');
+    expect(freeze.adjustedPlan?.activationRitual).toBeNull();
+    expect(lowActivation.adjustedPlan?.activationRitual).toBeNull();
+    expect(freeze.adjustedPlan?.stateOverlay?.localTimeContext).toEqual(localTimeContext);
     expect(lowActivation.choices).toEqual(['retry', 'change_time', 'rest']);
     expect(`${freeze.message}${lowActivation.message}`).not.toMatch(/診断|原因|症状/u);
   });

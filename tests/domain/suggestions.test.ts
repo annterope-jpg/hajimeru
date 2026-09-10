@@ -102,6 +102,7 @@ describe("createLocalInterventionPlan", () => {
       taskText: "部屋を片付ける",
       assessment,
       activationSource: "freeze",
+      stateExperience: "freeze",
       anxietyReliefPreference: "yes",
     });
 
@@ -148,7 +149,7 @@ describe("createLocalInterventionPlan", () => {
     });
   });
 
-  it("uses event cues, activation, and acceptance language when selected", () => {
+  it("uses event cues without automatically prescribing activation for an unspecified state", () => {
     const timePlan = createLocalInterventionPlan({
       taskText: "読書を始める",
       assessment: assessBottlenecks({ timeAmbiguity: 9 }),
@@ -161,9 +162,7 @@ describe("createLocalInterventionPlan", () => {
     });
 
     expect(timePlan.startCue).toBe("次に立ち上がったら");
-    expect(activationAndAversionPlan.activationRitual).toBe(
-      "立って、水を一口飲む",
-    );
+    expect(activationAndAversionPlan.activationRitual).toBeNull();
     expect(activationAndAversionPlan.supportiveMessage).toContain("嫌なまま");
   });
 
@@ -195,6 +194,7 @@ describe("createLocalInterventionPlan", () => {
       emotionalResponses: ["anxiety"],
       anxietyReliefPreference: "yes",
       activationSource: "freeze",
+      stateExperience: "freeze",
     });
 
     expect(plan.emotionSupport).toContain("不確かなことを1つ");

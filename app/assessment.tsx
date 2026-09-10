@@ -15,6 +15,7 @@ import {
   type ActivationSource,
   type AnxietyReliefPreference,
   type EmotionalResponse,
+  type StateExperience,
 } from '@/domain';
 import { useAppStore } from '@/state/useAppStore';
 import { colors } from '@/theme/colors';
@@ -50,12 +51,24 @@ const anxietyReliefChoices: { value: AnxietyReliefPreference; label: string; des
   { value: 'no', label: '今は下げずに一歩を試す', description: '気持ちを変えることを開始条件にしない' },
 ];
 
-const activationSourceChoices: { value: ActivationSource; label: string; description: string }[] = [
-  { value: 'fatigue', label: '眠気・疲れ・ぼんやり', description: '覚醒の低さに近い' },
+const stateExperienceChoices: { value: StateExperience; label: string; description: string }[] = [
+  { value: 'sleepiness', label: '眠気', description: '起きていること自体がつらい' },
+  { value: 'fatigue', label: '疲れ・消耗', description: '使える力が少ない感じがする' },
+  { value: 'brain_fog', label: '頭の霧・ぼんやり', description: '考える、選ぶ、言葉にすることが難しい' },
+  { value: 'body_heaviness', label: '身体の重さ', description: '身体を動かすことが特に重い' },
   { value: 'freeze', label: '不安・緊張で固まる', description: '身体は緊張しているが動きにくい' },
-  { value: 'both', label: '両方ありそう', description: '疲れと緊張が重なっている' },
-  { value: 'unclear', label: 'まだ分からない', description: '種類を決めずに進む' },
+  { value: 'mixed', label: 'いくつか重なっている', description: '1つに決めずに扱う' },
+  { value: 'unclear', label: 'まだ分からない', description: '種類を推測せずに進む' },
+  { value: 'none', label: '今は特にない', description: '状態の調整は置かない' },
 ];
+
+function activationSourceForState(value: StateExperience): ActivationSource | undefined {
+  if (value === 'freeze') return 'freeze';
+  if (value === 'mixed') return 'both';
+  if (value === 'unclear') return 'unclear';
+  if (value === 'none') return undefined;
+  return 'fatigue';
+}
 
 export default function AssessmentScreen() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -200,13 +213,15 @@ export default function AssessmentScreen() {
                 accessibilityLabel="身体や頭の重さ 0から10"
               />
               <View style={styles.followupQuestion}>
-                <AppText variant="label">この重さに一番近いものは？（任意）</AppText>
-                <AppText variant="caption" color={colors.inkMuted}>低覚醒なら身体を起こす準備、不安で固まる反応なら緊張を少し下げる準備へ変えます。</AppText>
+                <AppText variant="label">今の状態に一番近いものは？（任意）</AppText>
+                <AppText variant="caption" color={colors.inkMuted}>眠気、疲れ、頭の霧、身体の重さ、緊張を分けると、休息・時間変更・小さい一歩のどれを先に置くか選びやすくなります。原因や病名は判断しません。</AppText>
                 <ChoiceChips
-                  accessibilityLabel="身体や頭の重さの種類"
-                  value={assessment.activationSource}
-                  onChange={(activationSource) =>
+                  accessibilityLabel="今の身体や頭の状態"
+                  value={assessment.stateExperience}
+                  onChange={(stateExperience) => {
+                    const activationSource = activationSourceForState(stateExperience);
                     updateAssessment({
+                      stateExperience,
                       activationSource,
                       anxietyReliefPreference: needsEmotionReliefChoice(
                         assessment.emotionalResponses ?? [],
@@ -214,12 +229,13 @@ export default function AssessmentScreen() {
                       )
                         ? assessment.anxietyReliefPreference
                         : undefined,
-                    })
-                  }
-                  choices={activationSourceChoices}
+                    });
+                  }}
+                  choices={stateExperienceChoices}
                 />
               </View>
-              {(assessment.activationSource === 'freeze' || assessment.activationSource === 'both') &&
+              {(assessment.stateExperience === 'freeze' || assessment.stateExperience === 'mixed' ||
+                assessment.activationSource === 'freeze' || assessment.activationSource === 'both') &&
               !needsEmotionReliefChoice(assessment.emotionalResponses ?? []) ? (
                 <View style={styles.followupQuestion}>
                   <AppText variant="label">緊張を少し下げる準備を、先に置きたいですか？（任意）</AppText>

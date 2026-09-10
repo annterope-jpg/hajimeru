@@ -117,4 +117,24 @@ describe('source boundary regressions', () => {
     expect(store).toContain("response === 'anxiety' ? 'uncertainty'");
     expect(`${assessment}\n${support}`).not.toMatch(/急げば|締切直前なら|本当の原因/u);
   });
+
+  it('keeps state support non-diagnostic, compact, local-time aware, and outside AI', () => {
+    const assessment = readFileSync(join(process.cwd(), 'app', 'assessment.tsx'), 'utf8');
+    const plan = readFileSync(join(process.cwd(), 'app', 'plan.tsx'), 'utf8');
+    const support = readFileSync(join(process.cwd(), 'src', 'domain', 'stateSupport.ts'), 'utf8');
+    const retry = readFileSync(join(process.cwd(), 'src', 'domain', 'retry.ts'), 'utf8');
+    const ai = readFileSync(join(process.cwd(), 'src', 'services', 'ai.ts'), 'utf8');
+
+    expect(assessment).toContain('頭の霧・ぼんやり');
+    expect(assessment).toContain('身体の重さ');
+    expect(assessment).toContain('原因や病名は判断しません');
+    expect(plan).toContain('compactStateView');
+    expect(plan).toContain('記録した現地時刻');
+    expect(support).toContain('timeZoneOffsetMinutes');
+    expect(support).toContain('医療機関へ相談できます');
+    expect(support).toContain('服薬の変更は処方した医師・薬剤師に相談');
+    expect(retry).toContain('activationRitual: null');
+    expect(ai).not.toMatch(/StateExperience|stateExperience|localTimeContext|sleepiness|brain_fog/u);
+    expect(`${assessment}\n${plan}\n${support}`).not.toMatch(/原因は|概日リズム障害|睡眠障害です|薬が効いて/u);
+  });
 });
