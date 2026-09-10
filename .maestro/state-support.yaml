@@ -1,0 +1,24 @@
+appId: jp.hajimeru.app
+---
+- launchApp:
+    clearState: true
+- tapOn: "18歳以上です"
+- tapOn: "同意して始める"
+- tapOn:
+    id: "task-input"
+- inputText: "メールを確認する"
+- tapOn: "今、始める"
+- tapOn: "はっきりしている"
+- tapOn:
+    id: "assessment-next"
+- tapOn: "2"
+- tapOn:
+    id: "assessment-next"
+- tapOn: "8"
+- tapOn: "頭の霧・ぼんやり"
+- tapOn: "開始プランを見る"
+- assertVisible: "頭の霧がある今は、判断を増やしません"
+- assertVisible: "記録した現地時刻"
+- assertNotVisible: "今回の「動けない」の仮説"
+- tapOn: "必要なら開始プランの詳細を見る"
+- assertVisible: "何分だけ試しますか？"

@@ -42,13 +42,13 @@ src/services（通知・AI・同期・書き出し）
 
 | 型 | 表すもの | 意図的に含めないもの |
 |---|---|---|
-| `StateOverlay` | 今の低覚醒・緊張等について本人が答えた状態と、選べる調整 | 病名、原因推定、未回答時の自動分類 |
+| `StateOverlay` | 本人が答えた眠気、疲れ、頭の霧、身体の重さ、freeze等、観察時の現地時刻、選べる調整 | 病名、原因推定、未回答・旧記録の自動分類 |
 | `DecisionRule` | 回答済み入力から介入タグへ至る可読な規則 | ブラックボックス得点、診断・治療規則 |
 | `FutureCue` | 出来事・時刻・目印による戻り口 | タスク本文、位置情報、連絡先 |
 | `SupportedUseSummary` | 本人が伴走時に選ぶ要約項目 | 受領者ID、隠れた専門職評価、自動送信 |
 | `PersonalInsightSummary` | 本人向けに返す工夫と状態の手がかり | 計画数、開始数、開始率、直近頻度 |
 
-Phase 4の4型は後続Phaseで段階的に利用する。`StateOverlay`はPhase 5で開始プランへ接続した。既存SQLite形式へ値を自動追加せず、古い記録に未確認値を推測して埋めない。
+Phase 4の4型は後続Phaseで段階的に利用する。`StateOverlay`はPhase 5で開始プランへ接続し、Phase 12で任意の`experience`、`support`、`localTimeContext`を追加した。計画JSON内の任意フィールドなのでSQLite表変更はない。古い記録に状態や現地時刻を推測して埋めない。
 
 ## 4. 回帰ガード
 
@@ -87,6 +87,8 @@ Phase 4の4型は後続Phaseで段階的に利用する。`StateOverlay`はPhase
 セラピストは`DecisionRule`を正解として適用するのではなく、入力、説明、提案が本人の経験に近いか確認する。`SupportedUseSummary`は本人が選ぶ項目だけを持ち、セラピスト専用の隠し値を持たない。未回答や欠測を症状、抵抗、治療意欲へ置き換えない。
 
 ## 7. 既知の限界
+
+Phase 12の`localTimeContext`は、観察時のUTC時刻、端末上の現地日付・時・分、IANAタイムゾーン、UTCより東を正とするオフセット分を保持する。履歴表示時に現在の端末設定から再計算しない。状態詳細は計画JSONとして任意同期・本人エクスポート対象になるが、AI入力、通知本文、分析イベントには加えない。`DailyState`の固定同期列は変更しない。
 
 Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
 

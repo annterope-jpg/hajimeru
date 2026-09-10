@@ -11,6 +11,7 @@ import { getLocalRepository } from '@/data';
 import {
   RETRY_REASONS,
   RETRY_REASON_COPY,
+  captureLocalTimeContext,
   createRetryAdjustment,
   type RetryReason,
   type TaskAttempt,
@@ -27,10 +28,12 @@ export default function StuckScreen() {
   const endSupportedUse = useAppStore((state) => state.endSupportedUse);
   const [reason, setReason] = useState<RetryReason>();
   const [busy, setBusy] = useState(false);
-  const adjustment = useMemo(
-    () => (activePlan && reason ? createRetryAdjustment(activePlan, reason) : null),
-    [activePlan, reason],
-  );
+  const adjustment = useMemo(() => {
+    const observedAt = new Date();
+    return activePlan && reason
+      ? createRetryAdjustment(activePlan, reason, captureLocalTimeContext(observedAt))
+      : null;
+  }, [activePlan, reason]);
 
   if (!attemptId || !activePlan) return <Redirect href="/(tabs)" />;
 

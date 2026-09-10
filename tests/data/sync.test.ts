@@ -8,6 +8,7 @@ import {
   consolidateSyncRecords,
   reconcileDailyStateIdentities,
   readSupabaseConfig,
+  remoteAttemptToSyncRecord,
   remotePreferencesToSyncRecord,
   syncRecordsEquivalent,
 } from '../../src/services/sync';
@@ -160,6 +161,50 @@ describe('device-local consent', () => {
       aiConsentGranted: false,
       syncEnabled: false,
       accessibility: { largeText: true },
+    });
+  });
+});
+
+describe('state context sync compatibility', () => {
+  it('keeps the captured local context inside the remote plan JSON', () => {
+    const localTimeContext = {
+      observedAt: '2026-09-10T21:30:00.000Z',
+      localDate: '2026-09-11',
+      localHour: 6,
+      localMinute: 30,
+      timeZone: 'Asia/Tokyo',
+      timeZoneOffsetMinutes: 540,
+    };
+    const record = remoteAttemptToSyncRecord({
+      id: 'attempt-state',
+      user_id: 'user-1',
+      task_text: 'メールを確認する',
+      task_category: 'email',
+      assessment: {},
+      plan: {
+        stateOverlay: {
+          status: 'answered',
+          selected: 'low_activation',
+          allowedChoices: ['rest', 'change_time'],
+          experience: 'sleepiness',
+          localTimeContext,
+        },
+      },
+      timer_minutes: 3,
+      status: 'planned',
+      started_at: null,
+      ended_at: null,
+      pre_aversion: null,
+      post_aversion: null,
+      actual_difficulty: null,
+      continue_intent: null,
+      created_at: '2026-09-10T21:30:00.000Z',
+      updated_at: '2026-09-10T21:30:00.000Z',
+      deleted_at: null,
+    });
+
+    expect(record.payload).toMatchObject({
+      plan: { stateOverlay: { experience: 'sleepiness', localTimeContext } },
     });
   });
 });

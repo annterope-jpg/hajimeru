@@ -12,6 +12,7 @@ import { getLocalRepository } from '@/data';
 import {
   BOTTLENECK_LABELS,
   assessBottlenecks,
+  captureLocalTimeContext,
   classifySafety,
   createDefaultUserPreferences,
   createLocalInterventionPlan,
@@ -75,6 +76,7 @@ export default function PlanScreen() {
   const startTimer = useAppStore((state) => state.startTimer);
   const prepareAttempt = useAppStore((state) => state.prepareAttempt);
   const restoreAttempt = useAppStore((state) => state.restoreAttempt);
+  const resetFlow = useAppStore((state) => state.resetFlow);
 
   const [preferences, setPreferences] = useState<UserPreferences>(fallbackPreferences);
   const [aiLoading, setAiLoading] = useState(false);
@@ -89,6 +91,7 @@ export default function PlanScreen() {
   const [cueMinute, setCueMinute] = useState('00');
   const [cueSaving, setCueSaving] = useState(false);
   const [hypothesisFit, setHypothesisFit] = useState<HypothesisFit>();
+  const [showPlanDetails, setShowPlanDetails] = useState(false);
 
   const hypothesisGuidance = hypothesisFit
     ? getHypothesisFitGuidance(hypothesisFit)
@@ -165,6 +168,7 @@ export default function PlanScreen() {
       return;
     }
     if (!linkedAttemptId && retry !== '1') {
+      const observedAt = new Date();
       const plan = createLocalInterventionPlan({
         taskText,
         assessment,
@@ -175,6 +179,9 @@ export default function PlanScreen() {
         emotionalResponses: draft.emotionalResponses,
         anxietyReliefPreference: draft.anxietyReliefPreference,
         activationSource: draft.activationSource,
+        stateExperience: draft.stateExperience,
+        localTimeContext: captureLocalTimeContext(observedAt),
+        createdAt: observedAt.toISOString(),
       });
       const adjustedPlan = applyDraftOverrides(plan, draft.eventCue, draft.competingAction);
       setPlan(adjustedPlan);
@@ -184,7 +191,12 @@ export default function PlanScreen() {
       .getPreferences()
       .then((stored) => setPreferences(stored ?? fallbackPreferences))
       .catch(() => undefined);
-  }, [assessment, category, draft.activationSource, draft.anxietyReliefPreference, draft.competingAction, draft.emotionalResponses, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.valueAnchor, linkedAttemptId, restoring, retry, selectedDuration, setPlan, setRoadmap, taskText]);
+  }, [assessment, category, draft.activationSource, draft.anxietyReliefPreference, draft.competingAction, draft.emotionalResponses, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.stateExperience, draft.valueAnchor, linkedAttemptId, restoring, retry, selectedDuration, setPlan, setRoadmap, taskText]);
+
+  async function restForNow() {
+    await resetFlow();
+    router.replace('/(tabs)');
+  }
 
   function openRoadmap() {
     if (!activeRoadmap) updateAssessment({ roadmapRequested: true });
@@ -329,6 +341,8 @@ export default function PlanScreen() {
 
   if (restoring || !taskText || !activePlan) return null;
 
+  const compactStateView = Boolean(activePlan.stateOverlay?.support) && !showPlanDetails;
+
   if (safety.level !== 'safe') {
     return <SafetyRoute level={safety.level} guidance={safety.guidance} />;
   }
@@ -356,20 +370,41 @@ export default function PlanScreen() {
       activePlan.stateOverlay.selected !== 'none' ? (
         <Card tone="amber" style={styles.stateCard}>
           <AppText variant="label">今の状態を、課題とは別に扱います</AppText>
-          <AppText color={colors.inkMuted}>
-            {activePlan.stateOverlay.selected === 'freeze_or_tension'
-              ? activePlan.activationRitual
-                ? '不安や緊張で固まる感じに合わせ、本人が選んだ短い準備を先に置きます。'
-                : '不安や緊張で固まる感じかもしれません。緊張を下げる準備は希望された場合だけ加えます。'
-              : activePlan.stateOverlay.selected === 'both'
-                ? activePlan.activationRitual?.includes('息')
-                  ? 'ぼんやりと緊張が重なる感じに合わせ、本人が選んだ呼吸と身体の準備を短く行います。'
-                  : 'ぼんやりと緊張が重なる感じかもしれません。今回は身体の準備だけを置きます。'
-                : '眠さや身体の重さが強いときは、複雑な計画より先に身体の準備を置きます。'}
+          <AppText variant="heading">
+            {activePlan.stateOverlay.support?.heading ?? '今の状態に合わせて、開始以外も選べます'}
           </AppText>
-          {activePlan.activationRitual ? <AppText variant="heading">{activePlan.activationRitual}</AppText> : null}
+          <AppText color={colors.inkMuted}>
+            {activePlan.stateOverlay.support?.message ?? '小さく試す、時間を変える、休むから選べます。'}
+          </AppText>
+          {activePlan.stateOverlay.support?.action ? (
+            <AppText variant="label">{activePlan.stateOverlay.support.action}</AppText>
+          ) : null}
+          {activePlan.stateOverlay.localTimeContext ? (
+            <AppText variant="caption" color={colors.inkMuted}>
+              記録した現地時刻：{activePlan.stateOverlay.localTimeContext.localDate}{' '}
+              {String(activePlan.stateOverlay.localTimeContext.localHour).padStart(2, '0')}:
+              {String(activePlan.stateOverlay.localTimeContext.localMinute).padStart(2, '0')}
+              {activePlan.stateOverlay.localTimeContext.timeZone
+                ? `（${activePlan.stateOverlay.localTimeContext.timeZone}）`
+                : ''}
+            </AppText>
+          ) : null}
+          <View style={styles.stateActions}>
+            {activePlan.stateOverlay.allowedChoices.includes('make_smaller') ? (
+              <AppButton label="最初の1動作だけを見る" variant="secondary" compact onPress={() => setShowPlanDetails(false)} />
+            ) : null}
+            {activePlan.stateOverlay.allowedChoices.includes('change_time') ? (
+              <AppButton label="時間を変える・合図を置く" variant="secondary" compact onPress={() => { setShowPlanDetails(true); setCueOpen(true); }} />
+            ) : null}
+            {activePlan.stateOverlay.allowedChoices.includes('rest') ? (
+              <AppButton label="今はいったん休む" variant="quiet" compact onPress={() => void restForNow()} />
+            ) : null}
+            {activePlan.stateOverlay.allowedChoices.includes('seek_support') ? (
+              <AppButton label="続くときの相談目安" variant="quiet" compact onPress={() => router.push('/help')} />
+            ) : null}
+          </View>
           <AppText variant="caption" color={colors.inkMuted}>
-            このまま試すほか、動作を小さくする・時間を変える・休む選択も失敗ではありません。
+            状態から原因、診断名、服薬の影響は判断しません。このまま試す以外も失敗ではありません。
           </AppText>
         </Card>
       ) : null}
@@ -388,7 +423,16 @@ export default function PlanScreen() {
         <AppText color={colors.inkMuted}>{activePlan.supportiveMessage}</AppText>
       </Card>
 
-      {activePlan.bottlenecks.length ? (
+      {compactStateView ? (
+        <AppButton
+          label="必要なら開始プランの詳細を見る"
+          variant="quiet"
+          compact
+          onPress={() => setShowPlanDetails(true)}
+        />
+      ) : null}
+
+      {!compactStateView && activePlan.bottlenecks.length ? (
         <Card tone="blue" style={styles.hypothesisCard}>
           <AppText variant="label">今回の「動けない」の仮説</AppText>
           <AppText variant="caption" color={colors.inkMuted}>
@@ -456,7 +500,7 @@ export default function PlanScreen() {
         </Card>
       ) : null}
 
-      <Card tone={activeRoadmap ? 'amber' : 'default'} style={styles.roadmapCard}>
+      {!compactStateView ? <Card tone={activeRoadmap ? 'amber' : 'default'} style={styles.roadmapCard}>
         <View style={styles.roadmapHeader}>
           <View style={styles.roadmapIcon} accessibilityElementsHidden>
             <Ionicons name="map-outline" size={22} color={colors.primary} />
@@ -476,9 +520,9 @@ export default function PlanScreen() {
           icon="map-outline"
           onPress={openRoadmap}
         />
-      </Card>
+      </Card> : null}
 
-      <View style={styles.planItems}>
+      {!compactStateView ? <View style={styles.planItems}>
         <PlanRow label="始めるきっかけ" value={activePlan.startCue} />
         {activePlan.activationRitual &&
         !(activePlan.stateOverlay?.status === 'answered' && activePlan.stateOverlay.selected !== 'none') ? (
@@ -497,9 +541,9 @@ export default function PlanScreen() {
             value={activePlan.emotionSupport}
           />
         ) : null}
-      </View>
+      </View> : null}
 
-      <AppText variant="label" style={styles.sectionTitle}>
+      {!compactStateView ? <><AppText variant="label" style={styles.sectionTitle}>
         何分だけ試しますか？
       </AppText>
       <View style={styles.durationRow}>
@@ -522,9 +566,9 @@ export default function PlanScreen() {
             </AppText>
           </Pressable>
         ))}
-      </View>
+      </View></> : null}
 
-      <Card style={styles.cueCard}>
+      {!compactStateView ? <Card style={styles.cueCard}>
         <AppButton
           label={cueOpen ? '通知の設定を閉じる' : '今ではなく、開始の合図を作る'}
           variant="secondary"
@@ -564,9 +608,9 @@ export default function PlanScreen() {
             />
           </View>
         ) : null}
-      </Card>
+      </Card> : null}
 
-      <Card style={styles.aiCard}>
+      {!compactStateView ? <Card style={styles.aiCard}>
         <View style={styles.switchRow}>
           <View style={styles.switchCopy}>
             <AppText variant="label">AIで最初の動きを言い換える</AppText>
@@ -622,7 +666,7 @@ export default function PlanScreen() {
             ))}
           </View>
         ) : null}
-      </Card>
+      </Card> : null}
     </Screen>
   );
 }
@@ -673,6 +717,7 @@ function SafetyRoute({ level, guidance }: { level: string; guidance: string | nu
 const styles = StyleSheet.create({
   title: { marginTop: spacing.xs, marginBottom: spacing.xl },
   stateCard: { marginBottom: spacing.md },
+  stateActions: { gap: spacing.xs },
   actionCard: { padding: spacing.xl, gap: spacing.md },
   stepBadge: {
     alignSelf: 'flex-start',
