@@ -137,4 +137,17 @@ describe('source boundary regressions', () => {
     expect(ai).not.toMatch(/StateExperience|stateExperience|localTimeContext|sleepiness|brain_fog/u);
     expect(`${assessment}\n${plan}\n${support}`).not.toMatch(/原因は|概日リズム障害|睡眠障害です|薬が効いて/u);
   });
+
+  it('keeps effort cost separate, optional, singleton, and outside AI', () => {
+    const assessment = readFileSync(join(process.cwd(), 'app', 'assessment.tsx'), 'utf8');
+    const support = readFileSync(join(process.cwd(), 'src', 'domain', 'decisionFriction.ts'), 'utf8');
+    const suggestions = readFileSync(join(process.cwd(), 'src', 'domain', 'suggestions.ts'), 'utf8');
+    const ai = readFileSync(join(process.cwd(), 'src', 'services', 'ai.ts'), 'utf8');
+
+    expect(assessment).toContain('イヤさとは別に');
+    expect(support).toContain('今は決めずに進む');
+    expect(support).toContain('Returns either one intervention or none');
+    expect(suggestions).toContain('selectDecisionReduction(effortCostChoice)');
+    expect(ai).not.toMatch(/effortCost|decisionReduction|EffortCost/u);
+  });
 });

@@ -5,6 +5,7 @@ import type {
   ActivationSource,
   AnxietyReliefPreference,
   EmotionalResponse,
+  EffortCostChoice,
   InterventionPlan,
   RoadmapConcern,
   StateExperience,
@@ -33,6 +34,8 @@ export interface AssessmentDraft {
   anxietyReliefPreference?: AnxietyReliefPreference;
   activationSource?: ActivationSource;
   stateExperience?: StateExperience;
+  /** Optional and qualitative; absent means not assessed, not low effort cost. */
+  effortCostChoice?: EffortCostChoice;
   roadmapRequested?: boolean;
   desiredOutcome?: string;
   roadmapConcern?: RoadmapConcern;
@@ -278,6 +281,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
         cueWeakness: answers.cueWeakness ?? undefined,
         competingReward: answers.competingReward ?? undefined,
         stateExperience: attempt.plan.stateOverlay?.experience,
+        effortCostChoice: attempt.plan.effortCost?.selected ?? undefined,
         eventCue: attempt.plan.startCue,
         valueAnchor: attempt.plan.valueAnchor ?? undefined,
         roadmapRequested: attempt.roadmap !== undefined && attempt.roadmap !== null,

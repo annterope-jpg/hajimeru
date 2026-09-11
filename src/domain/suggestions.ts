@@ -5,6 +5,7 @@ import type {
   Assessment,
   Bottleneck,
   EmotionalResponse,
+  EffortCostChoice,
   InterventionPlan,
   LocalTimeContext,
   Score0To10,
@@ -14,6 +15,7 @@ import type {
   TaskBottleneck,
   TimerMinutes,
 } from "./types";
+import { createEffortCostOverlay, selectDecisionReduction } from "./decisionFriction";
 import { selectEmotionSupport } from "./emotionSupport";
 import { createStateOverlay } from "./stateSupport";
 
@@ -212,6 +214,7 @@ export interface CreateLocalInterventionPlanInput {
   anxietyReliefPreference?: AnxietyReliefPreference;
   activationSource?: ActivationSource;
   stateExperience?: StateExperience;
+  effortCostChoice?: EffortCostChoice;
   localTimeContext?: LocalTimeContext;
   createdAt?: string;
 }
@@ -238,6 +241,7 @@ export function createLocalInterventionPlan({
   anxietyReliefPreference,
   activationSource,
   stateExperience,
+  effortCostChoice,
   localTimeContext,
   createdAt = new Date().toISOString(),
 }: CreateLocalInterventionPlanInput): InterventionPlan {
@@ -271,6 +275,8 @@ export function createLocalInterventionPlan({
     reliefPreference: anxietyReliefPreference,
     legacyOverlay: legacyStateOverlay,
   });
+  const effortCost = createEffortCostOverlay(effortCostChoice);
+  const decisionReduction = selectDecisionReduction(effortCostChoice);
 
   // getLocalActionSuggestions has a total category map and always returns three.
   if (!suggestion) {
@@ -314,6 +320,8 @@ export function createLocalInterventionPlan({
       : "終わらせなくて大丈夫。最初の一歩だけです。",
     bottlenecks,
     stateOverlay,
+    effortCost,
+    decisionReduction,
     source: "local",
     createdAt,
   };

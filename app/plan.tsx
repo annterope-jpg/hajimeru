@@ -180,6 +180,7 @@ export default function PlanScreen() {
         anxietyReliefPreference: draft.anxietyReliefPreference,
         activationSource: draft.activationSource,
         stateExperience: draft.stateExperience,
+        effortCostChoice: draft.effortCostChoice,
         localTimeContext: captureLocalTimeContext(observedAt),
         createdAt: observedAt.toISOString(),
       });
@@ -191,7 +192,7 @@ export default function PlanScreen() {
       .getPreferences()
       .then((stored) => setPreferences(stored ?? fallbackPreferences))
       .catch(() => undefined);
-  }, [assessment, category, draft.activationSource, draft.anxietyReliefPreference, draft.competingAction, draft.emotionalResponses, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.stateExperience, draft.valueAnchor, linkedAttemptId, restoring, retry, selectedDuration, setPlan, setRoadmap, taskText]);
+  }, [assessment, category, draft.activationSource, draft.anxietyReliefPreference, draft.competingAction, draft.effortCostChoice, draft.emotionalResponses, draft.eventCue, draft.forgettingWorry, draft.roadmapRequested, draft.stateExperience, draft.valueAnchor, linkedAttemptId, restoring, retry, selectedDuration, setPlan, setRoadmap, taskText]);
 
   async function restForNow() {
     await resetFlow();
@@ -523,6 +524,13 @@ export default function PlanScreen() {
       </Card> : null}
 
       {!compactStateView ? <View style={styles.planItems}>
+        {activePlan.decisionReduction &&
+        activePlan.firstAction !== activePlan.decisionReduction.action ? (
+          <PlanRow
+            label={`決めることを1つ減らす：${activePlan.decisionReduction.label}`}
+            value={`${activePlan.decisionReduction.action}\n${activePlan.decisionReduction.explanation}`}
+          />
+        ) : null}
         <PlanRow label="始めるきっかけ" value={activePlan.startCue} />
         {activePlan.activationRitual &&
         !(activePlan.stateOverlay?.status === 'answered' && activePlan.stateOverlay.selected !== 'none') ? (

@@ -96,6 +96,31 @@ export interface ActionSuggestion {
   rationaleTag: SuggestionRationaleTag;
 }
 
+export const EFFORT_COST_CHOICES = [
+  "too_many_choices",
+  "too_many_steps",
+  "setup_heavy",
+  "sequence_unclear",
+  "defer",
+] as const;
+
+/** A person-selected description of decision/preparation load, separate from aversion. */
+export type EffortCostChoice = (typeof EFFORT_COST_CHOICES)[number];
+
+export interface EffortCostOverlay {
+  status: "not_assessed" | "answered";
+  selected: EffortCostChoice | null;
+}
+
+export interface DecisionReduction {
+  /** Never `defer`: deferring produces no intervention. */
+  kind: Exclude<EffortCostChoice, "defer">;
+  label: string;
+  /** The single concrete action that replaces an open decision point. */
+  action: string;
+  explanation: string;
+}
+
 export interface InterventionPlan {
   firstAction: string;
   /** Why this first action was selected; absent on records before Phase 5. */
@@ -122,6 +147,10 @@ export interface InterventionPlan {
   bottlenecks: Bottleneck[];
   /** State support is not counted toward the maximum two task hypotheses. */
   stateOverlay?: StateOverlay;
+  /** Optional qualitative overlay; it is never inferred from aversion or task text. */
+  effortCost?: EffortCostOverlay;
+  /** At most one person-selected decision-reduction intervention. */
+  decisionReduction?: DecisionReduction | null;
   source: "local" | "ai";
   createdAt: ISODateTime;
 }

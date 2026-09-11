@@ -90,6 +90,8 @@ Phase 4の4型は後続Phaseで段階的に利用する。`StateOverlay`はPhase
 
 Phase 12の`localTimeContext`は、観察時のUTC時刻、端末上の現地日付・時・分、IANAタイムゾーン、UTCより東を正とするオフセット分を保持する。履歴表示時に現在の端末設定から再計算しない。状態詳細は計画JSONとして任意同期・本人エクスポート対象になるが、AI入力、通知本文、分析イベントには加えない。`DailyState`の固定同期列は変更しない。
 
+Phase 13の`effortCost`は7軸とは別の任意・質的オーバーレイである。未回答、回答済み保留、4つの本人選択分類を区別する。`decisionReduction`は0または1件で、主要ボトルネック最大2つの採点や順位を変更しない。いずれも計画JSON内の任意フィールドとし、古い記録へ補完しない。
+
 Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
 
 - TypeScript型は実行時に外部・旧版データの妥当性を保証しない。後続の保存形式変更時はruntime decoderが必要

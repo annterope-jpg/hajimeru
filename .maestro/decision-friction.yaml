@@ -1,0 +1,25 @@
+appId: jp.hajimeru.app
+---
+- launchApp:
+    clearState: true
+- tapOn: "18歳以上で、内容を確認しました"
+- tapOn: "使い始める"
+- tapOn: "今、始める"
+- tapOn: "例：机の上を片付けたい"
+- inputText: "書類の手続きを進める"
+- tapOn: "次へ"
+- tapOn: "だいたい分かる"
+- tapOn:
+    id: "assessment-next"
+- tapOn:
+    point: "50%,50%"
+- tapOn:
+    id: "assessment-next"
+- tapOn:
+    point: "50%,50%"
+- tapOn: "詳しく調整する（任意）"
+- assertVisible: "イヤさとは別に、始める前の「決める・そろえる」が重いですか？（任意）"
+- tapOn: "始める前の準備が多い"
+- tapOn:
+    id: "assessment-next"
+- assertVisible: "決めることを1つ減らす：準備を1つにする"

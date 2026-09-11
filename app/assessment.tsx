@@ -12,9 +12,12 @@ import { Screen } from '@/components/Screen';
 import { StepIndicator } from '@/components/StepIndicator';
 import {
   needsEmotionReliefChoice,
+  EFFORT_COST_COPY,
+  EFFORT_COST_CHOICES,
   type ActivationSource,
   type AnxietyReliefPreference,
   type EmotionalResponse,
+  type EffortCostChoice,
   type StateExperience,
 } from '@/domain';
 import { useAppStore } from '@/state/useAppStore';
@@ -367,6 +370,22 @@ function AdvancedAssessment() {
           <AppText variant="caption" color={colors.inkMuted}>
             大切なことでも、判断・疲れ・不安・脱線しやすさが重なると始めにくくなります。ここでは「もっとやる気を出す」のではなく、今の入口を軽くするための調整を選びます。
           </AppText>
+        </Card>
+        <Card tone="amber">
+          <AppText variant="label">イヤさとは別に、始める前の「決める・そろえる」が重いですか？（任意）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            気持ちを下げる支援ではなく、候補・手順・準備・順番のどれか1つを減らすための確認です。選んだ場合だけ、判断を1つ減らす案をプランに1つ置きます。
+          </AppText>
+          <ChoiceChips<EffortCostChoice>
+            accessibilityLabel="開始前の判断や準備の負担"
+            value={assessment.effortCostChoice}
+            onChange={(effortCostChoice) => updateAssessment({ effortCostChoice })}
+            choices={EFFORT_COST_CHOICES.map((value) => ({
+              value,
+              label: EFFORT_COST_COPY[value].label,
+              description: EFFORT_COST_COPY[value].description,
+            }))}
+          />
         </Card>
         <Card>
           <AppText variant="label">この課題が少し進むと、何が助かる・大切ですか？（任意）</AppText>

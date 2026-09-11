@@ -32,9 +32,14 @@ describe('stuck retry adjustment', () => {
     const result = createRetryAdjustment(attemptFixture().plan, 'decision_remains');
 
     expect(result.adjustedPlan?.firstAction).toBe(
-      '候補を1つだけ目の前に置き、決めるのはあとにする',
+      result.adjustedPlan?.decisionReduction?.action,
     );
     expect(result.adjustedPlan?.firstActionRationaleTag).toBe('reduce_friction');
+    expect(result.adjustedPlan?.effortCost).toEqual({
+      status: 'answered',
+      selected: 'too_many_choices',
+    });
+    expect(result.adjustedPlan?.decisionReduction?.kind).toBe('too_many_choices');
     expect(result.message).toContain('判断を完成させず');
     expect(result.message).not.toMatch(/正しい|良い判断/u);
   });
