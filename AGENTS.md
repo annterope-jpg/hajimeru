@@ -40,3 +40,5 @@ Phase 11以降の感情反応に関する変更では、`docs/EMOTIONAL_SUPPORT.
 Phase 12以降の状態・睡眠・時間帯に関する変更では、`docs/STATE_CONTEXT_SUPPORT.md`も必ず読み、状態から診断・原因・服薬効果を推定せず、旧記録の現地時刻を現在の端末設定から補完しないこと。
 
 Phase 13以降の努力コスト・意思決定点に関する変更では、`docs/DECISION_FRICTION.md`も必ず読み、嫌悪やタスク本文から判断負担を推定せず、任意の単一選択と最大1介入を守ること。
+
+Phase 14以降の大きな課題・ロードマップに関する変更では、`docs/COLLABORATIVE_ROADMAP.md`も必ず読み、境界メモをToDo一覧へ変えず、空欄や旧記録を推測で補完しないこと。

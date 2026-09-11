@@ -13,6 +13,7 @@ import {
   getRoadmapConcerns,
   inferTaskCategory,
   ROADMAP_CONCERN_COPY,
+  type TaskRoadmap,
   type RoadmapConcern,
 } from '@/domain';
 import { useAppStore } from '@/state/useAppStore';
@@ -35,22 +36,26 @@ const CONCERN_CHOICES: { value: RoadmapConcern; label: string; description: stri
 
 const DETAIL_PROMPTS: Partial<Record<RoadmapConcern, { label: string; placeholder: string }>> = {
   entry: { label: '最初に触れる場所・物は？', placeholder: '例：床の手前にある大きな袋' },
-  scope: { label: '今回だけ扱う範囲は？', placeholder: '例：床の大きな物と、捨てられる物だけ' },
   information: { label: 'まず確認したい物・情報は？', placeholder: '例：捨て方が分からない物の分類' },
-  decisions: { label: '迷った物は、いったんどう扱いますか？', placeholder: '例：保留箱へ入れて今日は決めない' },
 };
 
 export default function RoadmapScreen() {
   const roadmap = useAppStore((state) => state.activeRoadmap);
   const taskText = useAppStore((state) => state.taskText);
   const activePlan = useAppStore((state) => state.activePlan);
+  const [editing, setEditing] = useState(false);
 
   if (!taskText || !activePlan) {
     return <Redirect href="/plan" />;
   }
 
-  if (!roadmap) {
-    return <RoadmapConsultation />;
+  if (!roadmap || editing) {
+    return (
+      <RoadmapConsultation
+        existing={roadmap}
+        onCancel={roadmap ? () => setEditing(false) : undefined}
+      />
+    );
   }
 
   const consultation = roadmap.consultation;
@@ -60,12 +65,15 @@ export default function RoadmapScreen() {
     <Screen
       testID="roadmap-screen"
       footer={
-        <AppButton
-          testID="roadmap-back-to-plan"
-          label="開始プランへ戻る"
-          icon="arrow-back"
-          onPress={() => router.back()}
-        />
+        <View style={styles.consultationFooter}>
+          <AppButton label="地図を少し直す" variant="quiet" onPress={() => setEditing(true)} />
+          <AppButton
+            testID="roadmap-back-to-plan"
+            label="開始プランへ戻る"
+            icon="arrow-back"
+            onPress={() => router.back()}
+          />
+        </View>
       }
     >
       <AppText variant="caption" color={colors.primary}>大きな課題の見通し</AppText>
@@ -98,6 +106,27 @@ export default function RoadmapScreen() {
           })}
           {consultation.knownContext ? (
             <AppText variant="caption" color={colors.inkMuted}>手がかり：{consultation.knownContext}</AppText>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {roadmap.boundaries ? (
+        <Card tone="green" style={styles.boundaryCard}>
+          <AppText variant="label">相談して置いた、今日の枠</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            完成条件ではなく、迷いを減らすための仮置きです。空欄は決めていないままにしています。
+          </AppText>
+          {roadmap.boundaries.todayScope ? (
+            <BoundaryRow label="今日扱う範囲" value={roadmap.boundaries.todayScope} />
+          ) : null}
+          {roadmap.boundaries.stoppingPoint ? (
+            <BoundaryRow label="今日の一区切り" value={roadmap.boundaries.stoppingPoint} />
+          ) : null}
+          {roadmap.boundaries.holdBox ? (
+            <BoundaryRow label="今は保留にするもの" value={roadmap.boundaries.holdBox} />
+          ) : null}
+          {roadmap.boundaries.restartCue ? (
+            <BoundaryRow label="次に戻る目印" value={roadmap.boundaries.restartCue} />
           ) : null}
         </Card>
       ) : null}
@@ -140,46 +169,90 @@ export default function RoadmapScreen() {
       <Card tone="amber" style={styles.ruleCard}>
         <AppText variant="label">途中で分からなくなったら</AppText>
         <AppText variant="caption" color={colors.inkMuted}>
-          判断が必要なものは「保留」にして構いません。止めるときは、次に触る物や開く場所を1つだけ残すと、再開時のコストを下げられます。
+          判断が必要なものは「保留」にして構いません。{roadmap.boundaries?.restartCue
+            ? `次は「${roadmap.boundaries.restartCue}」へ戻れます。`
+            : '止めるときは、次に触る物や開く場所を1つだけ残せます。'}
         </AppText>
       </Card>
     </Screen>
   );
 }
 
-function RoadmapConsultation() {
+function BoundaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.boundaryRow}>
+      <AppText variant="caption" color={colors.primary}>{label}</AppText>
+      <AppText>{value}</AppText>
+    </View>
+  );
+}
+
+function RoadmapConsultation({
+  existing,
+  onCancel,
+}: {
+  existing?: TaskRoadmap;
+  onCancel?: () => void;
+}) {
   const taskText = useAppStore((state) => state.taskText);
   const plan = useAppStore((state) => state.activePlan);
   const draft = useAppStore((state) => state.assessmentDraft);
   const updateAssessment = useAppStore((state) => state.updateAssessment);
   const setRoadmap = useAppStore((state) => state.setRoadmap);
   const [concerns, setConcerns] = useState<RoadmapConcern[]>(
-    draft.roadmapConcerns?.length
+    existing?.consultation?.concerns?.length
+      ? existing.consultation.concerns
+      : draft.roadmapConcerns?.length
       ? draft.roadmapConcerns
       : draft.roadmapConcern
         ? [draft.roadmapConcern]
         : [],
   );
-  const [knownContext, setKnownContext] = useState(draft.roadmapKnownContext ?? '');
-  const [desiredOutcome, setDesiredOutcome] = useState(draft.desiredOutcome ?? '');
+  const [knownContext, setKnownContext] = useState(
+    existing?.consultation?.knownContext ?? draft.roadmapKnownContext ?? '',
+  );
+  const [desiredOutcome, setDesiredOutcome] = useState(
+    existing?.boundaries?.stoppingPoint ?? draft.desiredOutcome ?? '',
+  );
+  const [todayScope, setTodayScope] = useState(
+    existing?.boundaries?.todayScope ?? draft.roadmapBoundaries?.todayScope ?? '',
+  );
+  const [holdBox, setHoldBox] = useState(
+    existing?.boundaries?.holdBox ?? draft.roadmapBoundaries?.holdBox ?? '',
+  );
+  const [restartCue, setRestartCue] = useState(
+    existing?.boundaries?.restartCue ?? draft.roadmapBoundaries?.restartCue ?? '',
+  );
   const [details, setDetails] = useState<Partial<Record<RoadmapConcern, string>>>(
-    draft.roadmapDetails ?? {},
+    existing?.consultation?.details ?? draft.roadmapDetails ?? {},
   );
 
   function createRoadmap() {
     if (!taskText || !plan || !concerns.length) return;
+    const boundaryDetails = { ...details };
+    delete boundaryDetails.scope;
+    delete boundaryDetails.decisions;
+    if (todayScope.trim()) boundaryDetails.scope = todayScope.trim();
+    if (holdBox.trim()) boundaryDetails.decisions = holdBox.trim();
     const consultation = {
       concerns,
       concern: concerns[0],
       knownContext: knownContext.trim() || null,
-      details,
+      details: boundaryDetails,
+      restartCue: restartCue.trim() || null,
     };
     updateAssessment({
       roadmapRequested: true,
       roadmapConcern: concerns[0],
       roadmapConcerns: concerns,
       roadmapKnownContext: consultation.knownContext ?? undefined,
-      roadmapDetails: details,
+      roadmapDetails: boundaryDetails,
+      roadmapBoundaries: {
+        todayScope: todayScope.trim() || null,
+        stoppingPoint: desiredOutcome.trim() || null,
+        holdBox: holdBox.trim() || null,
+        restartCue: restartCue.trim() || null,
+      },
       desiredOutcome,
     });
     setRoadmap(
@@ -191,6 +264,7 @@ function RoadmapConsultation() {
         consultation,
       }),
     );
+    onCancel?.();
   }
 
   return (
@@ -198,10 +272,14 @@ function RoadmapConsultation() {
       testID="roadmap-consultation"
       footer={
         <View style={styles.consultationFooter}>
-          <AppButton label="開始プランへ戻る" variant="quiet" onPress={() => router.back()} />
+          <AppButton
+            label={existing ? '変更せず戻る' : '開始プランへ戻る'}
+            variant="quiet"
+            onPress={onCancel ?? (() => router.back())}
+          />
           <AppButton
             testID="roadmap-generate"
-            label="この内容で仮の地図を作る"
+            label={existing ? '変更を地図に反映する' : 'この内容で仮の地図を作る'}
             icon="map-outline"
             disabled={!concerns.length}
             onPress={createRoadmap}
@@ -257,6 +335,30 @@ function RoadmapConsultation() {
             })}
           </Card>
         ) : null}
+        <Card tone="amber" style={styles.boundaryEditor}>
+          <AppText variant="label">今日の枠を、短い言葉で仮置きします（すべて任意）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            計画を完成させる質問ではありません。今分かる欄だけでよく、空欄はアプリが推測しません。
+          </AppText>
+          <View style={styles.detailEditor}>
+            <AppText variant="caption" color={colors.primary}>今日扱う範囲は？</AppText>
+            <TextInput accessibilityLabel="今日扱う範囲" value={todayScope} onChangeText={setTodayScope}
+              placeholder="例：床の大きな物と、捨てられる物だけ" placeholderTextColor="#89948E"
+              maxLength={120} style={styles.smallInput} />
+          </View>
+          <View style={styles.detailEditor}>
+            <AppText variant="caption" color={colors.primary}>今は保留にするものは？</AppText>
+            <TextInput accessibilityLabel="今は保留にするもの" value={holdBox} onChangeText={setHoldBox}
+              placeholder="例：判断に迷う書類は保留箱へ入れる" placeholderTextColor="#89948E"
+              maxLength={120} style={styles.smallInput} />
+          </View>
+          <View style={styles.detailEditor}>
+            <AppText variant="caption" color={colors.primary}>止めた後、次に戻る目印は？</AppText>
+            <TextInput accessibilityLabel="次に戻る目印" value={restartCue} onChangeText={setRestartCue}
+              placeholder="例：机の左端に、次の書類を1枚置く" placeholderTextColor="#89948E"
+              maxLength={120} style={styles.smallInput} />
+          </View>
+        </Card>
         <Card>
           <AppText variant="label">いま分かっている手がかりはありますか？（任意）</AppText>
           <AppText variant="caption" color={colors.inkMuted}>場所、期限、手元にある物など、短くて大丈夫です。</AppText>
@@ -295,6 +397,9 @@ const styles = StyleSheet.create({
   consultationList: { marginTop: spacing.lg, gap: spacing.md },
   consultationFooter: { gap: spacing.xs },
   consultationCard: { gap: spacing.xs, marginBottom: spacing.lg },
+  boundaryCard: { gap: spacing.md, marginBottom: spacing.lg },
+  boundaryRow: { gap: spacing.xs },
+  boundaryEditor: { gap: spacing.md },
   detailEditor: { gap: spacing.xs, marginTop: spacing.sm },
   reflectionRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm, marginTop: spacing.xs },
   reflectionCopy: { flex: 1, gap: 2 },
