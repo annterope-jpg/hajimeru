@@ -1,4 +1,5 @@
 import { createStateOverlay } from "./stateSupport";
+import { createEffortCostOverlay, selectDecisionReduction } from "./decisionFriction";
 import type { InterventionPlan, LocalTimeContext } from "./types";
 
 export const RETRY_REASONS = [
@@ -65,14 +66,17 @@ export function createRetryAdjustment(
   }
 
   if (reason === "decision_remains") {
+    const decisionReduction = selectDecisionReduction("too_many_choices");
     return {
       reason,
       heading: "決めることを1つ、あとへ移します",
       message: "判断を完成させず、候補を1つ外へ出すところまでにします。",
       adjustedPlan: {
         ...plan,
-        firstAction: "候補を1つだけ目の前に置き、決めるのはあとにする",
+        firstAction: decisionReduction!.action,
         firstActionRationaleTag: "reduce_friction",
+        effortCost: createEffortCostOverlay("too_many_choices"),
+        decisionReduction,
         supportiveMessage: "選び切らなくて大丈夫です。残りは保留のままにできます。",
         source: "local",
         createdAt: new Date().toISOString(),
