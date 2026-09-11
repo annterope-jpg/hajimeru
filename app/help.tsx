@@ -11,10 +11,17 @@ import { spacing } from '@/theme/spacing';
 export default function HelpScreen() {
   return (
     <Screen>
-      <AppText variant="title">日常の「始める」を支える道具</AppText>
+      <AppText variant="title">はじめの地図</AppText>
       <AppText color={colors.inkMuted} style={styles.lead}>
-        「いま、はじめる」は、やる気の有無を評価せず、最初の動き・時間・環境を整えるセルフマネジメントアプリです。
+        始めにくさをほどく、小さな行動実験。やる気を評価せず、止まっている条件、最初の動き、時間、環境を整理するセルフマネジメントアプリです。
       </AppText>
+
+      <Card tone="amber" style={styles.scopeCard}>
+        <AppText variant="heading">一人でも、支援者と一緒でも</AppText>
+        <AppText color={colors.inkMuted}>
+          本人が一人で使うことも、本人の同意のもとでセラピスト等と画面を見ながら使うことも想定しています。どちらの場合も、課題、試す方法、共有する内容は本人が選びます。
+        </AppText>
+      </Card>
 
       <View style={styles.list}>
         <Card tone="blue">
@@ -53,5 +60,6 @@ export default function HelpScreen() {
 
 const styles = StyleSheet.create({
   lead: { marginTop: spacing.sm, marginBottom: spacing.xl },
+  scopeCard: { marginBottom: spacing.md },
   list: { gap: spacing.md },
 });

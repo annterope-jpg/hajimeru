@@ -43,10 +43,13 @@ export default function OnboardingScreen() {
         <Ionicons name="footsteps" size={30} color={colors.primary} />
       </View>
       <AppText variant="display" style={styles.title}>
-        やる気を待たずに、{`\n`}最初の一歩へ。
+        はじめの地図
+      </AppText>
+      <AppText variant="heading" style={styles.tagline}>
+        始めにくさをほどく、{`\n`}小さな行動実験。
       </AppText>
       <AppText color={colors.inkMuted} style={styles.lead}>
-        「いま、はじめる」は、したい気持ちを採点せず、着手しづらい日常の行動を小さく整えるセルフマネジメントツールです。
+        「はじめの地図」は、したい気持ちを採点せず、止まっている条件と今の現在地を整理して、次に試す一歩を本人が選ぶためのセルフマネジメントツールです。
       </AppText>
 
       <Card tone="amber" style={styles.modelCard}>
@@ -108,7 +111,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.xl,
   },
-  title: { marginBottom: spacing.md },
+  title: { marginBottom: spacing.sm },
+  tagline: { marginBottom: spacing.md },
   lead: { marginBottom: spacing.xxl },
   principles: { gap: spacing.xl, marginBottom: spacing.xxl },
   modelCard: { marginBottom: spacing.xxl },
