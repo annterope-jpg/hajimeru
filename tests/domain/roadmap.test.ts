@@ -88,6 +88,7 @@ describe('createLocalRoadmap', () => {
       consultation: {
         concerns: ['endPoint', 'scope', 'decisions'],
         knownContext: '書類や細かい物は多い',
+        restartCue: '机の左端に次の書類を1枚置く',
         details: {
           scope: '床の大きな物と、明らかに捨てられる物だけ',
           decisions: '迷う物は保留箱へ入れる',
@@ -103,6 +104,31 @@ describe('createLocalRoadmap', () => {
       scope: '床の大きな物と、明らかに捨てられる物だけ',
       decisions: '迷う物は保留箱へ入れる',
     });
+    expect(roadmap.boundaries).toEqual({
+      todayScope: '床の大きな物と、明らかに捨てられる物だけ',
+      stoppingPoint: '大きな物と床の捨てられる物だけ処分できている',
+      holdBox: '迷う物は保留箱へ入れる',
+      restartCue: '机の左端に次の書類を1枚置く',
+    });
+    expect(roadmap.steps).toHaveLength(4);
+    expect(roadmap.steps[0]?.description).toBe('目の前の物を1つだけ手に取る');
+  });
+
+  it('keeps blank boundaries absent and never infers them from known context', () => {
+    const roadmap = createLocalRoadmap({
+      taskText: '部屋を片付ける',
+      category: 'tidying',
+      firstAction: '袋を1つ手に取る',
+      consultation: {
+        concerns: ['scope'],
+        knownContext: '締切は明日',
+        restartCue: null,
+      },
+    });
+
+    expect(roadmap.boundaries).toBeUndefined();
+    expect(roadmap.consultation?.restartCue).toBeNull();
+    expect(roadmap.steps[0]?.description).toBe('袋を1つ手に取る');
   });
 
   it.each(['email', 'bathing', 'studying', 'transition', 'other'] as const)(

@@ -8,6 +8,7 @@ import type {
   EffortCostChoice,
   InterventionPlan,
   RoadmapConcern,
+  RoadmapBoundaries,
   StateExperience,
   SupportedUseSession,
   TaskAttempt,
@@ -42,6 +43,7 @@ export interface AssessmentDraft {
   roadmapConcerns?: RoadmapConcern[];
   roadmapKnownContext?: string;
   roadmapDetails?: Partial<Record<RoadmapConcern, string>>;
+  roadmapBoundaries?: RoadmapBoundaries;
 }
 
 export interface ReflectionDraft {
@@ -285,11 +287,12 @@ export const useAppStore = create<ShellState>((set, get) => ({
         eventCue: attempt.plan.startCue,
         valueAnchor: attempt.plan.valueAnchor ?? undefined,
         roadmapRequested: attempt.roadmap !== undefined && attempt.roadmap !== null,
-        desiredOutcome: attempt.roadmap?.goalState,
+        desiredOutcome: attempt.roadmap?.boundaries?.stoppingPoint ?? undefined,
         roadmapConcern: attempt.roadmap?.consultation?.concern,
         roadmapConcerns: attempt.roadmap?.consultation?.concerns,
         roadmapKnownContext: attempt.roadmap?.consultation?.knownContext ?? undefined,
         roadmapDetails: attempt.roadmap?.consultation?.details,
+        roadmapBoundaries: attempt.roadmap?.boundaries,
       },
       selectedDurationMinutes: attempt.plan.durationMinutes,
       activeAttemptId: attempt.id,

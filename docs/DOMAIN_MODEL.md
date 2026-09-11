@@ -92,6 +92,8 @@ Phase 12の`localTimeContext`は、観察時のUTC時刻、端末上の現地日
 
 Phase 13の`effortCost`は7軸とは別の任意・質的オーバーレイである。未回答、回答済み保留、4つの本人選択分類を区別する。`decisionReduction`は0または1件で、主要ボトルネック最大2つの採点や順位を変更しない。いずれも計画JSON内の任意フィールドとし、古い記録へ補完しない。
 
+Phase 14の`TaskRoadmap.boundaries`は、本人が入力した今日の範囲、一区切り、保留、再開地点を保持する任意JSONである。追加の手順リストではなく参照メモとして扱う。旧`goalState`から本人回答を逆算せず、欠損した境界や`restartCue`を補完しない。
+
 Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
 
 - TypeScript型は実行時に外部・旧版データの妥当性を保証しない。後続の保存形式変更時はruntime decoderが必要

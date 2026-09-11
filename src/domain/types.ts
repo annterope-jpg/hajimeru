@@ -253,6 +253,16 @@ export interface RoadmapConsultation {
   knownContext: string | null;
   /** Optional one-line clarification for each selected concern. */
   details?: Partial<Record<RoadmapConcern, string>>;
+  /** A person-entered marker for where to return; absent on older roadmaps. */
+  restartCue?: string | null;
+}
+
+/** Short, person-entered boundaries. These are orientation notes, not checklist steps. */
+export interface RoadmapBoundaries {
+  todayScope: string | null;
+  stoppingPoint: string | null;
+  holdBox: string | null;
+  restartCue: string | null;
 }
 
 /**
@@ -267,6 +277,8 @@ export interface TaskRoadmap {
   steps: RoadmapStep[];
   /** Optional so roadmaps created before the consultation flow remain readable. */
   consultation?: RoadmapConsultation;
+  /** Optional so older roadmaps remain unchanged rather than receiving inferred answers. */
+  boundaries?: RoadmapBoundaries;
   createdAt: ISODateTime;
 }
 

@@ -150,4 +150,19 @@ describe('source boundary regressions', () => {
     expect(suggestions).toContain('selectDecisionReduction(effortCostChoice)');
     expect(ai).not.toMatch(/effortCost|decisionReduction|EffortCost/u);
   });
+
+  it('keeps roadmap boundaries optional, editable, and outside scoring or AI', () => {
+    const screen = readFileSync(join(process.cwd(), 'app', 'roadmap.tsx'), 'utf8');
+    const roadmap = readFileSync(join(process.cwd(), 'src', 'domain', 'roadmap.ts'), 'utf8');
+    const assessment = readFileSync(join(process.cwd(), 'src', 'domain', 'assessment.ts'), 'utf8');
+    const ai = readFileSync(join(process.cwd(), 'src', 'services', 'ai.ts'), 'utf8');
+
+    expect(screen).toContain('今日の枠を、短い言葉で仮置きします');
+    expect(screen).toContain('地図を少し直す');
+    expect(screen).toContain('変更せず戻る');
+    expect(screen).toContain('空欄はアプリが推測しません');
+    expect(roadmap).toContain('hasBoundaries');
+    expect(assessment).not.toMatch(/RoadmapBoundaries|restartCue/u);
+    expect(ai).not.toMatch(/RoadmapBoundaries|restartCue|todayScope|holdBox/u);
+  });
 });

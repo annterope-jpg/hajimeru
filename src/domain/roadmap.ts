@@ -1,6 +1,7 @@
 import type {
   RoadmapConcern,
   RoadmapConsultation,
+  RoadmapBoundaries,
   RoadmapStep,
   TaskCategory,
   TaskRoadmap,
@@ -177,7 +178,14 @@ export function createLocalRoadmap({
   createdAt = new Date().toISOString(),
 }: CreateLocalRoadmapInput): TaskRoadmap {
   const template = TEMPLATES[category];
-  const normalizedOutcome = shortDetail(desiredOutcome, 140);
+  const boundaries: RoadmapBoundaries = {
+    todayScope: shortDetail(consultation?.details?.scope, 100),
+    stoppingPoint: shortDetail(desiredOutcome, 140),
+    holdBox: shortDetail(consultation?.details?.decisions, 100),
+    restartCue: shortDetail(consultation?.restartCue, 100),
+  };
+  const hasBoundaries = Object.values(boundaries).some(Boolean);
+  const normalizedOutcome = boundaries.stoppingPoint;
   const goalState = normalizedOutcome || template.goalState;
   const concerns = getRoadmapConcerns(consultation);
   const concernCopies = concerns.map((concern) => ROADMAP_CONCERN_COPY[concern]);
@@ -227,8 +235,12 @@ export function createLocalRoadmap({
           concern: concerns[0],
           knownContext: knownContext || null,
           ...(Object.keys(details).length ? { details } : {}),
+          ...(consultation.restartCue !== undefined
+            ? { restartCue: boundaries.restartCue }
+            : {}),
         }
       : undefined,
+    ...(hasBoundaries ? { boundaries } : {}),
     createdAt,
   };
 }
