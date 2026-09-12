@@ -21,6 +21,8 @@ import {
   getHypothesisFitGuidance,
   HYPOTHESIS_FIT_OPTIONS,
   isFutureSceneEligible,
+  SOCIAL_SUPPORT_MODE_COPY,
+  getSocialSupportTemplate,
   type ActionSuggestion,
   type HypothesisFit,
   type InterventionPlan,
@@ -81,6 +83,8 @@ export default function PlanScreen() {
   const resetFlow = useAppStore((state) => state.resetFlow);
   const futureScene = useAppStore((state) => state.futureScene);
   const setFutureScene = useAppStore((state) => state.setFutureScene);
+  const socialSupportSelection = useAppStore((state) => state.socialSupportSelection);
+  const setSocialSupportSelection = useAppStore((state) => state.setSocialSupportSelection);
 
   const [preferences, setPreferences] = useState<UserPreferences>(fallbackPreferences);
   const [aiLoading, setAiLoading] = useState(false);
@@ -567,6 +571,31 @@ export default function PlanScreen() {
             )}
           </Card>
         ) : null}
+        <Card tone="blue" style={styles.futureSceneCard}>
+          <AppText variant="label">人との関わり方（任意）</AppText>
+          <AppText variant="caption" color={colors.inkMuted}>
+            一人、静かな同席、開始前後のひとことから、今の自分に合う条件を選べます。人が圧力になる日は使わなくて大丈夫です。
+          </AppText>
+          {socialSupportSelection ? (
+            <>
+              <AppText>{SOCIAL_SUPPORT_MODE_COPY[socialSupportSelection.mode].label}</AppText>
+              {getSocialSupportTemplate(socialSupportSelection.mode) ? (
+                <AppText selectable color={colors.inkMuted}>
+                  {getSocialSupportTemplate(socialSupportSelection.mode)}
+                </AppText>
+              ) : null}
+              <AppText variant="caption" color={colors.inkMuted}>
+                アプリから送信せず、返信・既読・出来ばえを確認しません。
+              </AppText>
+              <View style={styles.futureSceneActions}>
+                <AppButton label="関わり方を変更する" variant="secondary" compact onPress={() => router.push('/social-support' as never)} />
+                <AppButton label="今回は使わない" variant="quiet" compact onPress={() => setSocialSupportSelection(undefined)} />
+              </View>
+            </>
+          ) : (
+            <AppButton label="人との関わり方を選ぶ" variant="secondary" compact onPress={() => router.push('/social-support' as never)} />
+          )}
+        </Card>
         {activePlan.returnCue ? <PlanRow label="脱線・失念から戻る目印" value={activePlan.returnCue} /> : null}
         {activePlan.reassuranceAction ? <PlanRow label="忘れる心配を頭から下ろす" value={activePlan.reassuranceAction} /> : null}
         {activePlan.emotionSupport ? (

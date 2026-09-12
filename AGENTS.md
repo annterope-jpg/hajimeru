@@ -44,3 +44,5 @@ Phase 13以降の努力コスト・意思決定点に関する変更では、`do
 Phase 14以降の大きな課題・ロードマップに関する変更では、`docs/COLLABORATIVE_ROADMAP.md`も必ず読み、境界メモをToDo一覧へ変えず、空欄や旧記録を推測で補完しないこと。
 
 EFT・未来場面に関する変更では、`docs/EPISODIC_FUTURE_SCENE.md`を必ず読むこと。`EpisodicFutureScene`を再開用の`FutureCue`、価値アンカー、小報酬と混同せず、本人の自由記述をTaskAttempt、AI、同期、通知、書き出しへ追加しないこと。
+
+社会的随伴性・body doublingに関する変更では、`docs/SOCIAL_SUPPORT_EXPERIMENT.md`を必ず読むこと。一人を同等の選択肢にし、自動送信、連絡先・相手氏名、既読・返信・遵守確認、タスク本文入り定型文を追加しない。選択を一緒に見るモードやデータ共有同意へ転用しないこと。

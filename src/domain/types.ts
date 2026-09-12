@@ -133,6 +133,27 @@ export interface EpisodicFutureScene {
   feeling: string | null;
 }
 
+export const SOCIAL_SUPPORT_MODES = [
+  "solo",
+  "quiet_presence",
+  "announce_start",
+  "report_start",
+] as const;
+export type SocialSupportMode = (typeof SOCIAL_SUPPORT_MODES)[number];
+
+export const SOCIAL_SUPPORT_COMFORTS = [
+  "comfortable",
+  "pressure",
+  "unsure",
+] as const;
+export type SocialSupportComfort = (typeof SOCIAL_SUPPORT_COMFORTS)[number];
+
+/** Enum-only, current-flow selection. It contains no recipient or task data. */
+export interface SocialSupportSelection {
+  mode: SocialSupportMode;
+  comfort: SocialSupportComfort | null;
+}
+
 export interface InterventionPlan {
   firstAction: string;
   /** Why this first action was selected; absent on records before Phase 5. */

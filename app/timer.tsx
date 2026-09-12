@@ -9,7 +9,7 @@ import { AppButton } from '@/components/AppButton';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { getLocalRepository } from '@/data';
-import type { TaskAttempt } from '@/domain';
+import { getSocialSupportTemplate, type TaskAttempt } from '@/domain';
 import { useAppStore } from '@/state/useAppStore';
 import { colors } from '@/theme/colors';
 import { radii, spacing } from '@/theme/spacing';
@@ -30,6 +30,7 @@ export default function TimerScreen() {
   const timerEndsAt = useAppStore((state) => state.timerEndsAt);
   const attemptId = useAppStore((state) => state.activeAttemptId);
   const clearTimer = useAppStore((state) => state.clearTimer);
+  const socialSupportSelection = useAppStore((state) => state.socialSupportSelection);
   const [remaining, setRemaining] = useState(() => secondsUntil(timerEndsAt));
   const finished = remaining <= 0;
 
@@ -102,6 +103,16 @@ export default function TimerScreen() {
           <AppText variant="heading">{plan.firstAction}</AppText>
         </Card>
 
+        {socialSupportSelection?.mode === 'report_start' ? (
+          <Card tone="blue" style={styles.socialCard}>
+            <AppText variant="caption" color={colors.inkMuted}>始めたことだけ伝える場合の定型文</AppText>
+            <AppText selectable>{getSocialSupportTemplate('report_start')}</AppText>
+            <AppText variant="caption" color={colors.inkMuted}>
+              送るかどうかは自分で選べます。アプリは送信や返信確認をしません。
+            </AppText>
+          </Card>
+        ) : null}
+
         <View style={styles.message}>
           <AppText color={colors.inkMuted} style={styles.center}>
             {finished
@@ -162,6 +173,7 @@ const styles = StyleSheet.create({
   },
   clock: { fontVariant: ['tabular-nums'], zIndex: 1 },
   actionCard: { width: '100%', padding: spacing.xl },
+  socialCard: { width: '100%', marginTop: spacing.md, gap: spacing.sm },
   message: { marginTop: spacing.xl, paddingHorizontal: spacing.md },
   center: { textAlign: 'center' },
   footer: { padding: spacing.xl },

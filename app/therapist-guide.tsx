@@ -53,6 +53,13 @@ export default function TherapistGuideScreen() {
       </Card>
 
       <Card tone="blue" style={styles.card}>
+        <AppText variant="label">静かな同席を使うとき</AppText>
+        <AppText color={colors.inkMuted}>
+          本人が希望した場合だけ、見守りや進捗確認ではなく、それぞれのことを静かに行います。画面を見せる範囲と、途中でやめる合図を先に本人と決めます。一人を選ぶ・途中でやめることを、抵抗や治療意欲として評価しません。
+        </AppText>
+      </Card>
+
+      <Card tone="blue" style={styles.card}>
         <AppText variant="label">記録と共有</AppText>
         <AppText color={colors.inkMuted}>
           同じ画面を見ることはデータ共有への同意ではありません。タスク文や記録を見せる範囲は本人が選び、アプリから支援者へ自動送信しません。
