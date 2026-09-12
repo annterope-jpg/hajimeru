@@ -132,7 +132,8 @@ describe("createLocalInterventionPlan", () => {
       durationMinutes: 1,
       startCue: "この画面を閉じたら",
       activationRitual: null,
-      distractionFriction: "スマホの通知を切り、手の届かない所に置く",
+      distractionFriction:
+        "今していることを10秒だけ止め、次に使う物か画面へ手を移す。続けるかは、その後に決める",
       microReward: "タイマーが鳴ったら、チェックを1つ付ける",
       valueAnchor: null,
       returnCue: null,
@@ -183,8 +184,19 @@ describe("createLocalInterventionPlan", () => {
       taskText: "申請書類を進める",
       assessment: assessBottlenecks({ cueWeakness: 8 }),
     });
-    expect(cuePlan.returnCue).toContain("戻るための目印");
+    expect(cuePlan.returnCue).toContain("戻る場所を1つだけ");
     expect(cuePlan.reassuranceAction).toBeNull();
+  });
+
+  it("adds a brief switch bridge for an explicitly identified transition task", () => {
+    const plan = createLocalInterventionPlan({
+      taskText: "動画を止めてお風呂へ切り替える",
+      assessment: assessBottlenecks({ taskClarity: false }),
+      category: "transition",
+    });
+
+    expect(plan.distractionFriction).toContain("10秒だけ止め");
+    expect(plan.distractionFriction).toContain("その後に決める");
   });
 
   it("changes support when anxiety reduction or a freeze response is explicitly selected", () => {
