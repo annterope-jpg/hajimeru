@@ -1,11 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
+import { createEpisodicFutureScene } from '@/domain/futureScene';
+
 import type {
   ActivationSource,
   AnxietyReliefPreference,
   EmotionalResponse,
   EffortCostChoice,
+  EpisodicFutureScene,
   InterventionPlan,
   RoadmapConcern,
   RoadmapBoundaries,
@@ -67,6 +70,8 @@ interface ShellState {
   timerStartedAt?: string;
   timerEndsAt?: string;
   reflectionDraft: ReflectionDraft;
+  /** Device-local memo for the current flow; never copied into TaskAttempt. */
+  futureScene?: EpisodicFutureScene;
   supportedUseSession?: SupportedUseSession;
   initializeShell: () => Promise<void>;
   clearShellData: () => Promise<void>;
@@ -87,6 +92,7 @@ interface ShellState {
   startTimer: (attemptId: string, startedAt: string, endsAt: string) => Promise<void>;
   clearTimer: () => Promise<void>;
   updateReflection: (patch: Partial<ReflectionDraft>) => void;
+  setFutureScene: (scene?: EpisodicFutureScene) => void;
   resetFlow: () => Promise<void>;
   prepareRetry: (plan: InterventionPlan) => Promise<void>;
   startSupportedUse: (session: SupportedUseSession) => void;
@@ -108,6 +114,7 @@ type PersistedShell = Pick<
   | 'timerStartedAt'
   | 'timerEndsAt'
   | 'reflectionDraft'
+  | 'futureScene'
 >;
 
 let persistenceQueue: Promise<void> = Promise.resolve();
@@ -127,6 +134,7 @@ function persistedSnapshot(state: ShellState): PersistedShell {
     timerStartedAt: state.timerStartedAt,
     timerEndsAt: state.timerEndsAt,
     reflectionDraft: state.reflectionDraft,
+    futureScene: state.futureScene,
   };
 }
 
@@ -191,6 +199,9 @@ export const useAppStore = create<ShellState>((set, get) => ({
           typeof parsed.timerStartedAt === 'string' ? parsed.timerStartedAt : undefined,
         timerEndsAt: typeof parsed.timerEndsAt === 'string' ? parsed.timerEndsAt : undefined,
         reflectionDraft: parsed.reflectionDraft ?? {},
+        futureScene: parsed.futureScene
+          ? createEpisodicFutureScene(parsed.futureScene) ?? undefined
+          : undefined,
         hydrated: true,
       });
     } catch {
@@ -217,6 +228,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerEndsAt: undefined,
       reflectionDraft: {},
       supportedUseSession: undefined,
+      futureScene: undefined,
     });
   },
   finishOnboarding: async () => {
@@ -245,6 +257,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerStartedAt: undefined,
       timerEndsAt: undefined,
       reflectionDraft: {},
+      futureScene: undefined,
     });
     void persistShell(get());
   },
@@ -301,6 +314,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerStartedAt: attempt.startedAt ?? undefined,
       timerEndsAt,
       reflectionDraft: {},
+      futureScene: undefined,
     });
     void persistShell(get());
   },
@@ -320,6 +334,10 @@ export const useAppStore = create<ShellState>((set, get) => ({
     set((state) => ({ reflectionDraft: { ...state.reflectionDraft, ...patch } }));
     void persistShell(get());
   },
+  setFutureScene: (futureScene) => {
+    set({ futureScene });
+    void persistShell(get());
+  },
   resetFlow: async () => {
     set({
       taskText: '',
@@ -331,6 +349,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerStartedAt: undefined,
       timerEndsAt: undefined,
       reflectionDraft: {},
+      futureScene: undefined,
     });
     await persistShell(get());
   },

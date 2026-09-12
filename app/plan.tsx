@@ -16,9 +16,11 @@ import {
   classifySafety,
   createDefaultUserPreferences,
   createLocalInterventionPlan,
+  formatEpisodicFutureScene,
   inferTaskCategory,
   getHypothesisFitGuidance,
   HYPOTHESIS_FIT_OPTIONS,
+  isFutureSceneEligible,
   type ActionSuggestion,
   type HypothesisFit,
   type InterventionPlan,
@@ -77,6 +79,8 @@ export default function PlanScreen() {
   const prepareAttempt = useAppStore((state) => state.prepareAttempt);
   const restoreAttempt = useAppStore((state) => state.restoreAttempt);
   const resetFlow = useAppStore((state) => state.resetFlow);
+  const futureScene = useAppStore((state) => state.futureScene);
+  const setFutureScene = useAppStore((state) => state.setFutureScene);
 
   const [preferences, setPreferences] = useState<UserPreferences>(fallbackPreferences);
   const [aiLoading, setAiLoading] = useState(false);
@@ -541,6 +545,28 @@ export default function PlanScreen() {
         ) : null}
         {activePlan.microReward ? <PlanRow label="小さな手応え" value={activePlan.microReward} /> : null}
         {activePlan.valueAnchor ? <PlanRow label="この一歩の意味" value={activePlan.valueAnchor} /> : null}
+        {isFutureSceneEligible(assessment) ? (
+          <Card tone="blue" style={styles.futureSceneCard}>
+            <AppText variant="label">未来の一場面を置く（任意）</AppText>
+            <AppText variant="caption" color={colors.inkMuted}>
+              価値や小さな手応えとは別に、少し助かる近い未来を言葉で置けます。鮮明に想像する必要はなく、使わなくても開始できます。
+            </AppText>
+            {futureScene ? (
+              <>
+                <AppText>{formatEpisodicFutureScene(futureScene)}</AppText>
+                <AppText variant="caption" color={colors.inkMuted}>
+                  この一歩とつながる、あなたが選んだ場面です。そうなると保証する表示ではありません。
+                </AppText>
+                <View style={styles.futureSceneActions}>
+                  <AppButton label="場面を変更する" variant="secondary" compact onPress={() => router.push('/future-scene' as never)} />
+                  <AppButton label="この場面を外す" variant="quiet" compact onPress={() => setFutureScene(undefined)} />
+                </View>
+              </>
+            ) : (
+              <AppButton label="未来の一場面を作る" variant="secondary" compact onPress={() => router.push('/future-scene' as never)} />
+            )}
+          </Card>
+        ) : null}
         {activePlan.returnCue ? <PlanRow label="脱線・失念から戻る目印" value={activePlan.returnCue} /> : null}
         {activePlan.reassuranceAction ? <PlanRow label="忘れる心配を頭から下ろす" value={activePlan.reassuranceAction} /> : null}
         {activePlan.emotionSupport ? (
@@ -766,6 +792,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   planItems: { marginTop: spacing.xl, gap: spacing.lg },
+  futureSceneCard: { gap: spacing.sm },
+  futureSceneActions: { gap: spacing.sm },
   planRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   planDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.secondary, marginTop: 7 },
   planCopy: { flex: 1, gap: 2 },

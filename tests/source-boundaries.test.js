@@ -165,4 +165,23 @@ describe('source boundary regressions', () => {
     expect(assessment).not.toMatch(/RoadmapBoundaries|restartCue/u);
     expect(ai).not.toMatch(/RoadmapBoundaries|restartCue|todayScope|holdBox/u);
   });
+
+  it('keeps EFT optional, distinct, and device-local outside attempts, AI, sync, and exports', () => {
+    const screen = readFileSync(join(process.cwd(), 'app', 'future-scene.tsx'), 'utf8');
+    const plan = readFileSync(join(process.cwd(), 'app', 'plan.tsx'), 'utf8');
+    const types = readFileSync(join(process.cwd(), 'src', 'domain', 'types.ts'), 'utf8');
+    const ai = readFileSync(join(process.cwd(), 'src', 'services', 'ai.ts'), 'utf8');
+    const sync = readFileSync(join(process.cwd(), 'src', 'services', 'sync.ts'), 'utf8');
+    const exporter = readFileSync(join(process.cwd(), 'src', 'services', 'export.ts'), 'utf8');
+
+    expect(screen).toContain('未来の一場面を置く（任意）');
+    expect(screen).toContain('鮮明に想像する必要はありません');
+    expect(screen).toContain('使わずに開始プランへ戻る');
+    expect(screen).toContain('少し助かった場面');
+    expect(screen).toContain('少し進めている場面');
+    expect(plan).toContain('価値や小さな手応えとは別に');
+    expect(types.slice(types.indexOf('export interface InterventionPlan'), types.indexOf('export type RoadmapStepKind'))).not.toMatch(/EpisodicFutureScene|futureScene/u);
+    expect(`${ai}\n${sync}\n${exporter}`).not.toMatch(/futureScene|EpisodicFutureScene/u);
+    expect(screen).not.toMatch(/負の結果|後悔|困ることになる|失敗する未来/u);
+  });
 });

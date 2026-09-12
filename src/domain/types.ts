@@ -121,6 +121,18 @@ export interface DecisionReduction {
   explanation: string;
 }
 
+/**
+ * A person-authored, positive near-future scene used as an optional EFT cue.
+ * It is device-local current-flow data and is deliberately not part of a plan
+ * or attempt, so sync/export/AI boundaries cannot pick up its free text.
+ */
+export interface EpisodicFutureScene {
+  focus: "outcome" | "process";
+  whenWhere: string | null;
+  scene: string | null;
+  feeling: string | null;
+}
+
 export interface InterventionPlan {
   firstAction: string;
   /** Why this first action was selected; absent on records before Phase 5. */

@@ -1,6 +1,6 @@
 # はじめの地図：ドメインモデルと回帰テスト基盤
 
-版：0.2
+版：0.3
 確認日：2026-09-07
 対象：UX確認用試作（Phase 4・6）
 
@@ -45,6 +45,7 @@ src/services（通知・AI・同期・書き出し）
 | `StateOverlay` | 本人が答えた眠気、疲れ、頭の霧、身体の重さ、freeze等、観察時の現地時刻、選べる調整 | 病名、原因推定、未回答・旧記録の自動分類 |
 | `DecisionRule` | 回答済み入力から介入タグへ至る可読な規則 | ブラックボックス得点、診断・治療規則 |
 | `FutureCue` | 出来事・時刻・目印による戻り口 | タスク本文、位置情報、連絡先 |
+| `EpisodicFutureScene` | 本人が選んだ肯定的な近未来の結果または過程 | 推測した未来、負の帰結、診断・効果判定 |
 | `SupportedUseSummary` | 本人が伴走時に選ぶ要約項目 | 受領者ID、隠れた専門職評価、自動送信 |
 | `PersonalInsightSummary` | 本人向けに返す工夫と状態の手がかり | 計画数、開始数、開始率、直近頻度 |
 
@@ -93,6 +94,8 @@ Phase 12の`localTimeContext`は、観察時のUTC時刻、端末上の現地日
 Phase 13の`effortCost`は7軸とは別の任意・質的オーバーレイである。未回答、回答済み保留、4つの本人選択分類を区別する。`decisionReduction`は0または1件で、主要ボトルネック最大2つの採点や順位を変更しない。いずれも計画JSON内の任意フィールドとし、古い記録へ補完しない。
 
 Phase 14の`TaskRoadmap.boundaries`は、本人が入力した今日の範囲、一区切り、保留、再開地点を保持する任意JSONである。追加の手順リストではなく参照メモとして扱う。旧`goalState`から本人回答を逆算せず、欠損した境界や`restartCue`を補完しない。
+
+Phase 15の`EpisodicFutureScene`は、結果／過程の焦点と最大3つの本人入力を保持する。`FutureCue`、`valueAnchor`、`microReward`とは別の型である。Phase 15では`InterventionPlan`や`TaskAttempt`へ入れず、進行中フローのAsyncStorageにだけ保存するため、SQLite、同期、JSON/CSV、AI、通知へ流れない。新規課題、履歴復元、フロー終了時に消去し、同じ課題の再試行では保持する。
 
 Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
 
