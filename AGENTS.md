@@ -42,3 +42,5 @@ Phase 12以降の状態・睡眠・時間帯に関する変更では、`docs/STA
 Phase 13以降の努力コスト・意思決定点に関する変更では、`docs/DECISION_FRICTION.md`も必ず読み、嫌悪やタスク本文から判断負担を推定せず、任意の単一選択と最大1介入を守ること。
 
 Phase 14以降の大きな課題・ロードマップに関する変更では、`docs/COLLABORATIVE_ROADMAP.md`も必ず読み、境界メモをToDo一覧へ変えず、空欄や旧記録を推測で補完しないこと。
+
+EFT・未来場面に関する変更では、`docs/EPISODIC_FUTURE_SCENE.md`を必ず読むこと。`EpisodicFutureScene`を再開用の`FutureCue`、価値アンカー、小報酬と混同せず、本人の自由記述をTaskAttempt、AI、同期、通知、書き出しへ追加しないこと。

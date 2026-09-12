@@ -2,6 +2,7 @@ export * from "./assessment";
 export * from "./decisionFriction";
 export * from "./emotionSupport";
 export * from "./factories";
+export * from "./futureScene";
 export * from "./insights";
 export * from "./permissions";
 export * from "./roadmap";
