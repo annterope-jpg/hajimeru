@@ -184,4 +184,42 @@ describe('source boundary regressions', () => {
     expect(`${ai}\n${sync}\n${exporter}`).not.toMatch(/futureScene|EpisodicFutureScene/u);
     expect(screen).not.toMatch(/負の結果|後悔|困ることになる|失敗する未来/u);
   });
+
+  it('keeps social support optional, enum-only, memory-only, and free of automatic contact', () => {
+    const screen = readFileSync(join(process.cwd(), 'app', 'social-support.tsx'), 'utf8');
+    const timer = readFileSync(join(process.cwd(), 'app', 'timer.tsx'), 'utf8');
+    const support = readFileSync(join(process.cwd(), 'src', 'domain', 'socialSupport.ts'), 'utf8');
+    const store = readFileSync(join(process.cwd(), 'src', 'state', 'useAppStore.ts'), 'utf8');
+    const types = readFileSync(join(process.cwd(), 'src', 'domain', 'types.ts'), 'utf8');
+    const services = ['ai.ts', 'sync.ts', 'export.ts', 'notifications.ts']
+      .map((name) => readFileSync(join(process.cwd(), 'src', 'services', name), 'utf8'))
+      .join('\n');
+    const persisted = store.slice(store.indexOf('type PersistedShell'), store.indexOf('let persistenceQueue'));
+    const attempt = types.slice(types.indexOf('export interface TaskAttempt'), types.indexOf('export interface DailyState'));
+    const lifecycle = [
+      ['clearShellData: async', 'finishOnboarding: async'],
+      ['beginTask: (taskText)', 'updateAssessment: (patch)'],
+      ['restoreAttempt: (attempt)', 'setDuration: (selectedDurationMinutes)'],
+      ['resetFlow: async', 'prepareRetry: async'],
+      ['prepareRetry: async', 'startSupportedUse:'],
+    ];
+
+    expect(screen).toContain('人との関わり方を選ぶ（任意）');
+    expect(screen).toContain('一人で進めるにする');
+    expect(`${screen}\n${support}`).toContain('圧力になりそう');
+    expect(screen).toContain('今は選ばず開始プランへ戻る');
+    expect(screen).toContain('アプリは送信や確認をしません');
+    expect(timer).toContain("socialSupportSelection?.mode === 'report_start'");
+    expect(support).not.toMatch(/taskText|recipient|contact|fetch\s*\(|Share\.|Clipboard/u);
+    expect(persisted).not.toMatch(/socialSupportSelection/u);
+    for (const [start, end] of lifecycle) {
+      const startIndex = store.lastIndexOf(start);
+      expect(store.slice(startIndex, store.indexOf(end, startIndex))).toContain('socialSupportSelection: undefined');
+    }
+    const timerStart = store.lastIndexOf('startTimer: async');
+    expect(store.slice(timerStart, store.indexOf('clearTimer: async', timerStart))).not.toMatch(/socialSupportSelection/u);
+    expect(attempt).not.toMatch(/SocialSupport|socialSupport/u);
+    expect(services).not.toMatch(/SocialSupport|socialSupport/u);
+    expect(screen).not.toMatch(/必ず連絡|報告してください|送信済み|既読|相手の名前/u);
+  });
 });

@@ -111,6 +111,7 @@ export default function RootLayout() {
           <Stack.Screen name="assessment" options={{ title: '開始の準備' }} />
           <Stack.Screen name="plan" options={{ title: '最初の一歩' }} />
           <Stack.Screen name="future-scene" options={{ title: '未来の一場面' }} />
+          <Stack.Screen name="social-support" options={{ title: '人との関わり方' }} />
           <Stack.Screen name="roadmap" options={{ title: '大きな課題の見通し' }} />
           <Stack.Screen name="timer" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="reflection" options={{ title: 'やってみた記録', gestureEnabled: false }} />

@@ -12,6 +12,7 @@ import type {
   InterventionPlan,
   RoadmapConcern,
   RoadmapBoundaries,
+  SocialSupportSelection,
   StateExperience,
   SupportedUseSession,
   TaskAttempt,
@@ -72,6 +73,8 @@ interface ShellState {
   reflectionDraft: ReflectionDraft;
   /** Device-local memo for the current flow; never copied into TaskAttempt. */
   futureScene?: EpisodicFutureScene;
+  /** Optional social condition for this experiment; memory-only and enum-only. */
+  socialSupportSelection?: SocialSupportSelection;
   supportedUseSession?: SupportedUseSession;
   initializeShell: () => Promise<void>;
   clearShellData: () => Promise<void>;
@@ -93,6 +96,7 @@ interface ShellState {
   clearTimer: () => Promise<void>;
   updateReflection: (patch: Partial<ReflectionDraft>) => void;
   setFutureScene: (scene?: EpisodicFutureScene) => void;
+  setSocialSupportSelection: (selection?: SocialSupportSelection) => void;
   resetFlow: () => Promise<void>;
   prepareRetry: (plan: InterventionPlan) => Promise<void>;
   startSupportedUse: (session: SupportedUseSession) => void;
@@ -229,6 +233,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       reflectionDraft: {},
       supportedUseSession: undefined,
       futureScene: undefined,
+      socialSupportSelection: undefined,
     });
   },
   finishOnboarding: async () => {
@@ -258,6 +263,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerEndsAt: undefined,
       reflectionDraft: {},
       futureScene: undefined,
+      socialSupportSelection: undefined,
     });
     void persistShell(get());
   },
@@ -315,6 +321,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerEndsAt,
       reflectionDraft: {},
       futureScene: undefined,
+      socialSupportSelection: undefined,
     });
     void persistShell(get());
   },
@@ -338,6 +345,9 @@ export const useAppStore = create<ShellState>((set, get) => ({
     set({ futureScene });
     void persistShell(get());
   },
+  setSocialSupportSelection: (socialSupportSelection) => {
+    set({ socialSupportSelection });
+  },
   resetFlow: async () => {
     set({
       taskText: '',
@@ -350,6 +360,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerEndsAt: undefined,
       reflectionDraft: {},
       futureScene: undefined,
+      socialSupportSelection: undefined,
     });
     await persistShell(get());
   },
@@ -360,6 +371,7 @@ export const useAppStore = create<ShellState>((set, get) => ({
       timerStartedAt: undefined,
       timerEndsAt: undefined,
       reflectionDraft: {},
+      socialSupportSelection: undefined,
     });
     await persistShell(get());
   },

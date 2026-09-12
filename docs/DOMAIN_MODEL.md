@@ -1,6 +1,6 @@
 # はじめの地図：ドメインモデルと回帰テスト基盤
 
-版：0.3
+版：0.4
 確認日：2026-09-07
 対象：UX確認用試作（Phase 4・6）
 
@@ -46,6 +46,7 @@ src/services（通知・AI・同期・書き出し）
 | `DecisionRule` | 回答済み入力から介入タグへ至る可読な規則 | ブラックボックス得点、診断・治療規則 |
 | `FutureCue` | 出来事・時刻・目印による戻り口 | タスク本文、位置情報、連絡先 |
 | `EpisodicFutureScene` | 本人が選んだ肯定的な近未来の結果または過程 | 推測した未来、負の帰結、診断・効果判定 |
+| `SocialSupportSelection` | 今回の人との関わり方と本人が感じる安心・圧力 | 氏名、連絡先、相手ID、送信・既読・遵守状態 |
 | `SupportedUseSummary` | 本人が伴走時に選ぶ要約項目 | 受領者ID、隠れた専門職評価、自動送信 |
 | `PersonalInsightSummary` | 本人向けに返す工夫と状態の手がかり | 計画数、開始数、開始率、直近頻度 |
 
@@ -96,6 +97,8 @@ Phase 13の`effortCost`は7軸とは別の任意・質的オーバーレイで�
 Phase 14の`TaskRoadmap.boundaries`は、本人が入力した今日の範囲、一区切り、保留、再開地点を保持する任意JSONである。追加の手順リストではなく参照メモとして扱う。旧`goalState`から本人回答を逆算せず、欠損した境界や`restartCue`を補完しない。
 
 Phase 15の`EpisodicFutureScene`は、結果／過程の焦点と最大3つの本人入力を保持する。`FutureCue`、`valueAnchor`、`microReward`とは別の型である。Phase 15では`InterventionPlan`や`TaskAttempt`へ入れず、進行中フローのAsyncStorageにだけ保存するため、SQLite、同期、JSON/CSV、AI、通知へ流れない。新規課題、履歴復元、フロー終了時に消去し、同じ課題の再試行では保持する。
+
+Phase 16の`SocialSupportSelection`は、4つの支援条件と3つの本人評価だけを持つ。未選択を一人と推測しない。`AssessmentDraft`、`InterventionPlan`、`TaskAttempt`、`SupportedUseSession`、`PersistedShell`へ入れないメモリ内状態であり、再起動、新規課題、履歴復元、再試行、終了、取消で消える。同席選択は一緒に見るモードや共有権限を変更しない。
 
 Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
 

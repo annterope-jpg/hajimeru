@@ -10,6 +10,7 @@ export * from "./retry";
 export * from "./regressionGuards";
 export * from "./safety";
 export * from "./sharedDecision";
+export * from "./socialSupport";
 export * from "./stateSupport";
 export * from "./supportedUse";
 export * from "./suggestions";
