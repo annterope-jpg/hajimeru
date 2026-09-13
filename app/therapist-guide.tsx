@@ -66,6 +66,13 @@ export default function TherapistGuideScreen() {
         </AppText>
       </Card>
 
+      <Card tone="green" style={styles.card}>
+        <AppText variant="label">脱線・再開・切替を一緒に見直す</AppText>
+        <AppText color={colors.inkMuted}>
+          次回は「どの場面で止まったか」「3つの支援のどれを試したか」「合った点と負担だった点」「次に1つ変えるなら何か」を本人の言葉で確認します。一時表示は保存・送信されないため、本人が見せたい範囲だけを扱います。
+        </AppText>
+      </Card>
+
       <AppText variant="caption" color={colors.inkMuted}>
         現在はUX確認用試作です。このガイドは診療手順や専門職の判断を置き換えません。
       </AppText>

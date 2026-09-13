@@ -100,6 +100,8 @@ Phase 15の`EpisodicFutureScene`は、結果／過程の焦点と最大3つの�
 
 Phase 16の`SocialSupportSelection`は、4つの支援条件と3つの本人評価だけを持つ。未選択を一人と推測しない。`AssessmentDraft`、`InterventionPlan`、`TaskAttempt`、`SupportedUseSession`、`PersistedShell`へ入れないメモリ内状態であり、再起動、新規課題、履歴復元、再試行、終了、取消で消える。同席選択は一緒に見るモードや共有権限を変更しない。
 
+Phase 17の`ReentrySupport`は、`return_marker`、`next_action`、`transition_bridge`のうち本人が押した1種類と、その場に必要な表示だけを持つ導出値である。`InterventionPlan`の値を読むが書き換えず、`TaskAttempt`、アセスメント、ロードマップ、シェル保存へ追加しない。未選択から脱線や切替困難を推測しない。
+
 Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
 
 - TypeScript型は実行時に外部・旧版データの妥当性を保証しない。後続の保存形式変更時はruntime decoderが必要
