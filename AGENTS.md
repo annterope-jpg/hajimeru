@@ -46,3 +46,5 @@ Phase 14以降の大きな課題・ロードマップに関する変更では、
 EFT・未来場面に関する変更では、`docs/EPISODIC_FUTURE_SCENE.md`を必ず読むこと。`EpisodicFutureScene`を再開用の`FutureCue`、価値アンカー、小報酬と混同せず、本人の自由記述をTaskAttempt、AI、同期、通知、書き出しへ追加しないこと。
 
 社会的随伴性・body doublingに関する変更では、`docs/SOCIAL_SUPPORT_EXPERIMENT.md`を必ず読むこと。一人を同等の選択肢にし、自動送信、連絡先・相手氏名、既読・返信・遵守確認、タスク本文入り定型文を追加しない。選択を一緒に見るモードやデータ共有同意へ転用しないこと。
+
+Phase 17以降の脱線・再開・切替に関する変更では、`docs/TRANSITION_SUPPORT.md`を必ず読むこと。一般的な生産性管理、他アプリ監視、好きな活動の禁止へ広げず、本人回答または明示的なtransition課題に隣接する最小支援だけを扱うこと。

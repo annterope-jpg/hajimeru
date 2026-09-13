@@ -14,4 +14,5 @@ export * from "./socialSupport";
 export * from "./stateSupport";
 export * from "./supportedUse";
 export * from "./suggestions";
+export * from "./transitionSupport";
 export * from "./types";

@@ -18,6 +18,7 @@ import type {
 import { createEffortCostOverlay, selectDecisionReduction } from "./decisionFriction";
 import { selectEmotionSupport } from "./emotionSupport";
 import { createStateOverlay } from "./stateSupport";
+import { createAdjacentTransitionSupport } from "./transitionSupport";
 
 export const TASK_CATEGORY_LABELS: Readonly<Record<TaskCategory, string>> = {
   tidying: "片付け",
@@ -253,6 +254,7 @@ export function createLocalInterventionPlan({
     activationSource,
   });
   const suggestion = getFirstActionSuggestion(taskText, category, bottlenecks);
+  const transitionSupport = createAdjacentTransitionSupport({ category, bottlenecks });
   const legacyStateOverlay: StateOverlay =
     assessment.stateOverlay?.selected === "low_activation"
       ? {
@@ -295,18 +297,14 @@ export function createLocalInterventionPlan({
     durationMinutes,
     startCue,
     activationRitual: stateOverlay.support?.action ?? null,
-    distractionFriction: includes(bottlenecks, "competingReward")
-      ? "スマホの通知を切り、手の届かない所に置く"
-      : null,
+    distractionFriction: transitionSupport.switchBridge,
     microReward: includes(bottlenecks, "rewardDistance")
       ? normalizedValueAnchor
         ? `タイマーが鳴ったら、「${normalizedValueAnchor}」に向けて少し動けた印を1つ付ける`
         : "タイマーが鳴ったら、チェックを1つ付ける"
       : null,
     valueAnchor: normalizedValueAnchor,
-    returnCue: includes(bottlenecks, "cueWeakness")
-      ? "戻るための目印を外に置く（通知・付箋・開いた画面のどれか1つ）"
-      : null,
+    returnCue: transitionSupport.returnBridge,
     reassuranceAction: isHighOptionalScore(forgettingWorry)
       ? "忘れないよう頭で持ち続けず、「次にすること」を1行だけ外に残す"
       : null,
