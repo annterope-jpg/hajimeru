@@ -27,14 +27,13 @@ const choices = SUPPORTED_USE_SECTIONS.map((value) => ({
 export default function ShareSummaryScreen() {
   const { attemptId } = useLocalSearchParams<{ attemptId?: string }>();
   const [attempt, setAttempt] = useState<TaskAttempt | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(!attemptId);
   const [selectedSections, setSelectedSections] = useState<SupportedUseSection[]>([]);
   const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     let active = true;
     if (!attemptId) {
-      setLoaded(true);
       return () => {
         active = false;
       };
