@@ -222,4 +222,24 @@ describe('source boundary regressions', () => {
     expect(services).not.toMatch(/SocialSupport|socialSupport/u);
     expect(screen).not.toMatch(/必ず連絡|報告してください|送信済み|既読|相手の名前/u);
   });
+
+  it('keeps reentry support live, single-purpose, and outside attempts and services', () => {
+    const timer = readFileSync(join(process.cwd(), 'app', 'timer.tsx'), 'utf8');
+    const support = readFileSync(join(process.cwd(), 'src', 'domain', 'reentrySupport.ts'), 'utf8');
+    const types = readFileSync(join(process.cwd(), 'src', 'domain', 'types.ts'), 'utf8');
+    const services = ['ai.ts', 'sync.ts', 'export.ts', 'notifications.ts']
+      .map((name) => readFileSync(join(process.cwd(), 'src', 'services', name), 'utf8'))
+      .join('\n');
+    const attempt = types.slice(types.indexOf('export interface TaskAttempt'), types.indexOf('export interface DailyState'));
+
+    expect(timer).toContain("setReentryMode('return_marker')");
+    expect(timer).toContain("setReentryMode('next_action')");
+    expect(timer).toContain("setReentryMode('transition_bridge')");
+    expect(timer).toContain('閉じる（記録しない）');
+    expect(support).toContain('never mutates the plan');
+    expect(support).not.toMatch(/saveAttempt|startTimer|prepareRetry|roadmap|fetch\s*\(/u);
+    expect(attempt).not.toMatch(/ReentrySupport|reentrySupport/u);
+    expect(services).not.toMatch(/ReentrySupport|reentrySupport/u);
+    expect(timer).not.toMatch(/begin\(|prepareRetry\(|setPlan\(/u);
+  });
 });

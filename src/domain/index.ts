@@ -5,6 +5,7 @@ export * from "./factories";
 export * from "./futureScene";
 export * from "./insights";
 export * from "./permissions";
+export * from "./reentrySupport";
 export * from "./roadmap";
 export * from "./retry";
 export * from "./regressionGuards";

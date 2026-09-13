@@ -2,14 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { AppState, StyleSheet, View } from 'react-native';
+import { AppState, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppButton } from '@/components/AppButton';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { getLocalRepository } from '@/data';
-import { getSocialSupportTemplate, type TaskAttempt } from '@/domain';
+import {
+  createReentrySupport,
+  getSocialSupportTemplate,
+  type ReentrySupportMode,
+  type TaskAttempt,
+} from '@/domain';
 import { useAppStore } from '@/state/useAppStore';
 import { colors } from '@/theme/colors';
 import { radii, spacing } from '@/theme/spacing';
@@ -32,6 +37,7 @@ export default function TimerScreen() {
   const clearTimer = useAppStore((state) => state.clearTimer);
   const socialSupportSelection = useAppStore((state) => state.socialSupportSelection);
   const [remaining, setRemaining] = useState(() => secondsUntil(timerEndsAt));
+  const [reentryMode, setReentryMode] = useState<ReentrySupportMode>();
   const finished = remaining <= 0;
 
   useEffect(() => {
@@ -60,6 +66,11 @@ export default function TimerScreen() {
     return total > 0 ? 1 - remaining / total : 1;
   }, [plan?.durationMinutes, remaining]);
 
+  const reentrySupport = useMemo(
+    () => (plan && reentryMode ? createReentrySupport(plan, reentryMode) : null),
+    [plan, reentryMode],
+  );
+
   if (!plan || !timerEndsAt) return null;
 
   async function finishTimer() {
@@ -78,7 +89,11 @@ export default function TimerScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.content} testID="timer-started">
+      <ScrollView
+        testID="timer-started"
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.successMark}>
           <Ionicons name="checkmark" size={28} color={colors.primary} />
         </View>
@@ -103,6 +118,49 @@ export default function TimerScreen() {
           <AppText variant="heading">{plan.firstAction}</AppText>
         </Card>
 
+        <View style={styles.reentryChoices}>
+          <AppText variant="caption" color={colors.inkMuted} style={styles.center}>
+            脱線した・次がわからない・切り替えにくいとき
+          </AppText>
+          <View style={styles.reentryButtons}>
+            <AppButton
+              testID="show-return-marker"
+              label="戻る目印"
+              compact
+              variant="secondary"
+              onPress={() => setReentryMode('return_marker')}
+            />
+            <AppButton
+              testID="show-next-action"
+              label="次の1動作"
+              compact
+              variant="secondary"
+              onPress={() => setReentryMode('next_action')}
+            />
+            <AppButton
+              testID="show-transition-bridge"
+              label="切替の橋"
+              compact
+              variant="secondary"
+              onPress={() => setReentryMode('transition_bridge')}
+            />
+          </View>
+        </View>
+
+        {reentrySupport ? (
+          <Card tone="blue" style={styles.reentryCard} testID="reentry-support">
+            <AppText variant="caption" color={colors.inkMuted}>{reentrySupport.title}</AppText>
+            <AppText variant="label">{reentrySupport.action}</AppText>
+            <AppText variant="caption" color={colors.inkMuted}>{reentrySupport.explanation}</AppText>
+            <AppButton
+              label="閉じる（記録しない）"
+              compact
+              variant="quiet"
+              onPress={() => setReentryMode(undefined)}
+            />
+          </Card>
+        ) : null}
+
         {socialSupportSelection?.mode === 'report_start' ? (
           <Card tone="blue" style={styles.socialCard}>
             <AppText variant="caption" color={colors.inkMuted}>始めたことだけ伝える場合の定型文</AppText>
@@ -120,7 +178,7 @@ export default function TimerScreen() {
               : 'タイマー中に止まっても、気がそれても失敗ではありません。'}
           </AppText>
         </View>
-      </View>
+      </ScrollView>
 
       <View style={styles.footer}>
         <AppButton
@@ -173,6 +231,9 @@ const styles = StyleSheet.create({
   },
   clock: { fontVariant: ['tabular-nums'], zIndex: 1 },
   actionCard: { width: '100%', padding: spacing.xl },
+  reentryChoices: { width: '100%', marginTop: spacing.lg, gap: spacing.sm },
+  reentryButtons: { gap: spacing.sm },
+  reentryCard: { width: '100%', marginTop: spacing.md, gap: spacing.sm },
   socialCard: { width: '100%', marginTop: spacing.md, gap: spacing.sm },
   message: { marginTop: spacing.xl, paddingHorizontal: spacing.md },
   center: { textAlign: 'center' },
