@@ -1,7 +1,8 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { AppButton } from '@/components/AppButton';
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
@@ -50,10 +51,7 @@ export default function InsightsScreen() {
   );
 
   const personalInsights = useMemo(
-    () =>
-      createPersonalInsightSummary(
-        summary,
-      ),
+    () => createPersonalInsightSummary(summary),
     [summary],
   );
 
@@ -99,6 +97,9 @@ export default function InsightsScreen() {
       <AppText variant="heading" style={styles.sectionTitle}>
         最近残した一歩
       </AppText>
+      <AppText variant="caption" color={colors.inkMuted} style={styles.shareNote}>
+        誰かと確認したいときは、一歩ごとに共有用メモを作れます。共有項目はその都度、自分で選びます。
+      </AppText>
       <View style={styles.history}>
         {summary.attempts.slice(0, 8).map((attempt) => {
           const started = Boolean(attempt.startedAt);
@@ -120,6 +121,13 @@ export default function InsightsScreen() {
                   {started ? '試した一歩' : '残してある一歩'}
                 </AppText>
               </View>
+              <AppButton
+                label="共有用メモを確認"
+                variant="quiet"
+                onPress={() =>
+                  router.push({ pathname: '/share-summary', params: { attemptId: attempt.id } })
+                }
+              />
             </Card>
           );
         })}
@@ -145,8 +153,9 @@ function formatAttempt(attempt: TaskAttempt) {
 const styles = StyleSheet.create({
   lead: { marginTop: spacing.sm, marginBottom: spacing.xl },
   sectionTitle: { marginTop: spacing.xxl, marginBottom: spacing.md },
+  shareNote: { marginBottom: spacing.md },
   history: { gap: spacing.sm },
-  historyCard: { padding: spacing.md, borderRadius: radii.md },
+  historyCard: { padding: spacing.md, borderRadius: radii.md, gap: spacing.sm },
   historyRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   historyCopy: { flex: 1, gap: 2 },
 });

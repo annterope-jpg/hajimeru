@@ -115,6 +115,7 @@ export default function RootLayout() {
           <Stack.Screen name="roadmap" options={{ title: '大きな課題の見通し' }} />
           <Stack.Screen name="timer" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen name="reflection" options={{ title: 'やってみた記録', gestureEnabled: false }} />
+          <Stack.Screen name="share-summary" options={{ title: '共有用メモ' }} />
           <Stack.Screen name="stuck" options={{ title: '一歩を調整する' }} />
           <Stack.Screen name="help" options={{ title: 'このアプリについて' }} />
           <Stack.Screen name="sync" options={{ title: '任意の同期' }} />
