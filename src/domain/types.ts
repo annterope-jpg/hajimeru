@@ -431,9 +431,17 @@ export const SUPPORTED_USE_SECTIONS = [
   "working_hypotheses",
   "chosen_experiment",
   "return_cue",
-  "reflection",
+  "helpful_point",
+  "difficult_point",
+  "next_change",
 ] as const;
 export type SupportedUseSection = (typeof SUPPORTED_USE_SECTIONS)[number];
+
+export interface SupportedUseSummaryItem {
+  section: SupportedUseSection;
+  label: string;
+  value: string;
+}
 
 /**
  * Metadata for a summary the person may choose to show in supported use.
@@ -441,8 +449,11 @@ export type SupportedUseSection = (typeof SUPPORTED_USE_SECTIONS)[number];
  */
 export interface SupportedUseSummary {
   mode: "solo" | "together_on_persons_device";
+  focus: SupportedUseFocus;
   selectedSections: SupportedUseSection[];
+  items: SupportedUseSummaryItem[];
   generatedAt: ISODateTime;
+  expiresAt: ISODateTime | null;
   userInitiatedShareOnly: true;
   containsHiddenAssessment: false;
 }

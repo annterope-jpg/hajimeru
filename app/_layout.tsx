@@ -122,6 +122,7 @@ export default function RootLayout() {
           <Stack.Screen name="data-permissions" options={{ title: 'データと同意' }} />
           <Stack.Screen name="therapist-guide" options={{ title: '共同利用ガイド' }} />
           <Stack.Screen name="supported-use" options={{ title: '一緒に見るモード' }} />
+          <Stack.Screen name="share-summary" options={{ title: '面談に持っていくメモ' }} />
           <Stack.Screen name="auth/callback" options={{ title: 'サインイン' }} />
         </Stack>
       </SafeAreaProvider>

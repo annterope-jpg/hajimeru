@@ -18,11 +18,11 @@ describe('data permission definitions', () => {
     }
   });
 
-  it('does not claim therapist sharing is implemented', () => {
-    expect(getDataPermissionDefinition('therapistShare')).toMatchObject({
-      status: 'not_implemented',
-      destination: '自動送信しません',
-    });
+  it('describes selective person-initiated sharing as optional', () => {
+    const definition = getDataPermissionDefinition('therapistShare');
+    expect(definition).toMatchObject({ status: 'available', required: false });
+    expect(definition.destination).toContain('OS');
+    expect(definition.data).toHaveLength(1);
   });
 
   it('describes destination, retention, and withdrawal for every capability', () => {

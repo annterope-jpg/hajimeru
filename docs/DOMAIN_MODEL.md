@@ -102,6 +102,8 @@ Phase 16の`SocialSupportSelection`は、4つの支援条件と3つの本人評�
 
 Phase 17の`ReentrySupport`は、`return_marker`、`next_action`、`transition_bridge`のうち本人が押した1種類と、その場に必要な表示だけを持つ導出値である。`InterventionPlan`の値を読むが書き換えず、`TaskAttempt`、アセスメント、ロードマップ、シェル保存へ追加しない。未選択から脱線や切替困難を推測しない。
 
+Phase 18の`SupportedUseSummary`は、本人が選択し、空欄でない許可項目だけを`items`へ写す画面内導出値である。`TaskAttempt`や`InterventionPlan`を展開せず、試行ID・タスク本文・評価値・EFT・感情自由記述・社会支援・Phase 17一時支援を含めない。編集下書き、要約、共有履歴は永続化・同期しない。`expiresAt`は確認の目安であり、外部コピーを失効させない。
+
 Phase 11で`InterventionPlan`に`emotionSupport`、`emotionSupportLabel`、`emotionSupportKind`を追加した。これらは本人が選んだ感情反応と、必要な場合の明示的な準備希望から導出する任意フィールドである。旧レコードの`anxiety`は読み込み時に`uncertainty`へ移行し、欠損値は推測しない。元の感情選択と準備希望は進行中のローカル下書きに限り、`TaskAttempt`の評価軸には追加しない。
 
 - TypeScript型は実行時に外部・旧版データの妥当性を保証しない。後続の保存形式変更時はruntime decoderが必要
