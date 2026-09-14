@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -114,6 +114,14 @@ export default function InsightsScreen() {
                   </AppText>
                   <AppText variant="caption" color={colors.inkMuted} numberOfLines={2}>
                     最初の一歩：{attempt.plan.firstAction}
+                  </AppText>
+                  <AppText
+                    accessibilityRole="link"
+                    variant="caption"
+                    color={colors.primary}
+                    onPress={() => router.push({ pathname: '/share-summary', params: { attemptId: attempt.id } } as never)}
+                  >
+                    面談に持っていくメモを作る
                   </AppText>
                 </View>
                 <AppText variant="caption" color={colors.primary}>

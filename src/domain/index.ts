@@ -10,6 +10,7 @@ export * from "./roadmap";
 export * from "./retry";
 export * from "./regressionGuards";
 export * from "./safety";
+export * from "./shareSummary";
 export * from "./sharedDecision";
 export * from "./socialSupport";
 export * from "./stateSupport";

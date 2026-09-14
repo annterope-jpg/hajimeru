@@ -242,4 +242,22 @@ describe('source boundary regressions', () => {
     expect(services).not.toMatch(/ReentrySupport|reentrySupport/u);
     expect(timer).not.toMatch(/begin\(|prepareRetry\(|setPlan\(/u);
   });
+
+  it('keeps the supported-use summary person-selected, previewed, and outside persistence', () => {
+    const screen = readFileSync(join(process.cwd(), 'app', 'share-summary.tsx'), 'utf8');
+    const support = readFileSync(join(process.cwd(), 'src', 'domain', 'shareSummary.ts'), 'utf8');
+    const sharing = readFileSync(join(process.cwd(), 'src', 'services', 'shareSummary.ts'), 'utf8');
+    const store = readFileSync(join(process.cwd(), 'src', 'state', 'useAppStore.ts'), 'utf8');
+    const sync = readFileSync(join(process.cwd(), 'src', 'services', 'sync.ts'), 'utf8');
+    const genericExport = readFileSync(join(process.cwd(), 'src', 'services', 'export.ts'), 'utf8');
+
+    expect(screen).toContain('すべて未選択から始まります');
+    expect(screen).toContain('この文章だけを共有画面へ渡します');
+    expect(screen).toContain('受け取ったことや保存したことをアプリは確認・記録しません');
+    expect(screen).toContain('setSelected([])');
+    expect(support).not.toMatch(/\.\.\.attempt|taskText|valueAnchor|emotionSupport|futureScene|ReentrySupport/u);
+    expect(sharing).toContain('Share.share({ message: previewedText');
+    expect(screen).not.toMatch(/exportAndShare|restoreAttempt|saveAttempt|startTimer|prepareRetry/u);
+    expect(`${store}\n${sync}\n${genericExport}`).not.toMatch(/ShareSummaryEdits|shareSummaryDraft|SupportedUseSummaryItem/u);
+  });
 });

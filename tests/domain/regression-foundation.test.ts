@@ -37,8 +37,11 @@ describe('stable clinical domain contracts', () => {
     };
     const summary: SupportedUseSummary = {
       mode: 'together_on_persons_device',
+      focus: 'reflection',
       selectedSections: ['working_hypotheses', 'chosen_experiment'],
+      items: [],
       generatedAt: FIXTURE_NOW,
+      expiresAt: null,
       userInitiatedShareOnly: true,
       containsHiddenAssessment: false,
     };
