@@ -47,7 +47,7 @@
     "@typescript-eslint/parser": "latest",
     "eslint": "^9.25.0",
     "eslint-config-expo": "latest",
-    "babel-preset-expo": "~57.0.6",
+    "babel-preset-expo": "~57.0.8",
     "typescript": "~6.0.3",
     "vitest": "latest"
   }
